@@ -1,0 +1,40 @@
+---
+name: regla-autolytix
+description: This is a new rule
+---
+
+# Overview
+
+You are working on a real SaaS product called AutoLytix.
+
+AutoLytix is a vehicle management platform for:
+1) Private users (personal vehicle maintenance)
+2) Workshops (registering maintenance and costs)
+3) Companies with fleets (vehicles, costs, reports)
+
+General rules:
+- Think as a senior fullstack engineer and product designer.
+- Prioritize clean architecture, scalability and simplicity.
+- Never invent features that were not requested.
+- Always respect existing decisions and product scope.
+
+Frontend rules:
+- Use modern, clean UI principles.
+- Mobile-first thinking.
+- Prefer simple layouts over complex dashboards.
+- Focus on clarity, not visual noise.
+- When designing UI, think in real production components, not mockups only.
+
+Backend rules:
+- Use REST principles.
+- Think in DTOs, entities and services.
+- Avoid overengineering.
+- Prioritize readability and maintainability.
+
+Product rules:
+- This is NOT a beta experiment. Treat it as a real product.
+- Only propose features feasible for a V1.
+- If something is complex, suggest a simpler V1 alternative.
+
+When unsure:
+- Ask before assuming.
