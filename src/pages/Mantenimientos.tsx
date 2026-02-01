@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { vehiculosService } from '../services/vehiculos.service'
-import { Mantenimiento, calcularEstadoMantenimiento } from '../services/mantenimientos.service'
+import { Mantenimiento, estadoPorFechaObjetivo } from '../services/mantenimientos.service'
 import { TIPOS_MANTENIMIENTO } from '../constants/tiposMantenimiento'
 import { formatCurrency, formatNumber } from '../utils/currency'
 import Modal from '../components/Modal'
@@ -191,9 +191,9 @@ export default function Mantenimientos() {
     // odometro es obligatorio, así que siempre debe tener un valor
     const odometro = parseInt(formData.odometro)
     
-    // Calcular estado: si es 'auto', calcular; si no, usar el seleccionado
-    const estadoCalculado = formData.estado === 'auto' 
-      ? calcularEstadoMantenimiento(fechaVencimiento, odometro, vehiculo.kilometrajeActual)
+    // Calcular estado: si es 'auto', según fechaObjetivo (Vencido si < hoy, Próximo si >= hoy)
+    const estadoCalculado = formData.estado === 'auto'
+      ? estadoPorFechaObjetivo(fechaVencimiento)
       : formData.estado
     
     const estadoTexto = estadoCalculado === 'vencido' ? 'Vencido' 

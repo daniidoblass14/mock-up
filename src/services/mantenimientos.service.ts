@@ -49,6 +49,20 @@ export function calcularEstadoMantenimiento(
   return 'proximo'
 }
 
+/**
+ * Estado por fecha objetivo al guardar (regla "calcular"): solo Vencido o Próximo.
+ * fechaObjetivo < hoy -> Vencido; fechaObjetivo >= hoy -> Próximo.
+ * Permite fechas pasadas (histórico). Comparación a medianoche local.
+ */
+export function estadoPorFechaObjetivo(fechaVencimiento: Date | undefined): 'vencido' | 'proximo' {
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  if (!fechaVencimiento) return 'proximo'
+  const fecha = new Date(fechaVencimiento)
+  fecha.setHours(0, 0, 0, 0)
+  return fecha.getTime() < hoy.getTime() ? 'vencido' : 'proximo'
+}
+
 class MantenimientosService {
   private mantenimientos: Mantenimiento[] = [
     {

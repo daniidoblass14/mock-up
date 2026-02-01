@@ -1,7 +1,7 @@
 import { vehiculosService } from '../services/vehiculos.service'
 import { mantenimientosService } from '../services/mantenimientos.service'
 import type { Mantenimiento } from '../services/mantenimientos.service'
-import { getMockData } from './mockData'
+import { getMockData, getMockMantenimientosAdicionales, MIN_MANTENIMIENTOS_PARA_ANADIR_MOCK } from './mockData'
 
 const KEY_VEHICULOS = 'autolytix_vehiculos'
 const KEY_MANTENIMIENTOS = 'autolytix_mantenimientos'
@@ -28,6 +28,15 @@ export function loadInitialData(): void {
       const mantenimientos = reviveMantenimientos(JSON.parse(rawM) as Mantenimiento[])
       if (Array.isArray(vehiculos) && Array.isArray(mantenimientos)) {
         vehiculosService.replaceAll(vehiculos)
+        // Si el usuario tiene pocos mantenimientos y al menos 6 vehículos, añadir mock adicionales para gráficas
+        if (vehiculos.length >= 6 && mantenimientos.length < MIN_MANTENIMIENTOS_PARA_ANADIR_MOCK) {
+          const adicionales = getMockMantenimientosAdicionales(vehiculos, mantenimientos)
+          if (adicionales.length > 0) {
+            mantenimientosService.replaceAll([...mantenimientos, ...adicionales])
+            persistData()
+            return
+          }
+        }
         mantenimientosService.replaceAll(mantenimientos)
         return
       }
