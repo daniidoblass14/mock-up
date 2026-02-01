@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Wrench, Edit, Calendar, Truck, DollarSign, Gauge, Save } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
-import { calcularEstadoMantenimiento } from '../services/mantenimientos.service'
+import { estadoPorFechaObjetivo } from '../services/mantenimientos.service'
 import { vehiculosService } from '../services/vehiculos.service'
 import { formatCurrency, formatNumber } from '../utils/currency'
 import { TIPOS_MANTENIMIENTO } from '../constants/tiposMantenimiento'
@@ -139,7 +139,7 @@ export default function DetalleMantenimiento() {
       return
     }
     const estadoCalculado = formData.estado === 'auto'
-      ? calcularEstadoMantenimiento(fechaVencimiento, odometro, v.kilometrajeActual)
+      ? estadoPorFechaObjetivo(fechaVencimiento)
       : formData.estado
     const estadoTexto = estadoCalculado === 'vencido' ? 'Vencido' : estadoCalculado === 'proximo' ? 'Próximo' : estadoCalculado === 'completado' ? 'Completado' : 'Al día'
     const vencimientoTexto = formatVencimiento(fechaVencimiento, odometro)
