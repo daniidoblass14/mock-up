@@ -355,11 +355,12 @@ export default function Vehiculos() {
     return data.slice(startIndex, endIndex)
   }
 
-  // Calcular total de páginas
-  const totalPages = Math.ceil(vehiculosFiltrados.length / pageSize)
+  // pageSize: 5, 10, 20 o 0 = "Todos" (sin paginar)
+  const totalPages = pageSize === 0 ? 1 : Math.max(1, Math.ceil(vehiculosFiltrados.length / pageSize))
 
-  // Aplicar paginación a los vehículos filtrados
+  // Aplicar paginación a los vehículos filtrados (o todos si pageSize === 0)
   const vehiculosPaginados = useMemo(() => {
+    if (pageSize === 0) return vehiculosFiltrados
     return paginate(vehiculosFiltrados, currentPage, pageSize)
   }, [vehiculosFiltrados, currentPage, pageSize])
 
@@ -376,8 +377,8 @@ export default function Vehiculos() {
   }, [totalPages, currentPage])
 
   // Calcular rango de elementos mostrados
-  const startIndex = (currentPage - 1) * pageSize + 1
-  const endIndex = Math.min(currentPage * pageSize, vehiculosFiltrados.length)
+  const startIndex = pageSize === 0 ? 1 : (currentPage - 1) * pageSize + 1
+  const endIndex = pageSize === 0 ? vehiculosFiltrados.length : Math.min(currentPage * pageSize, vehiculosFiltrados.length)
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
@@ -790,32 +791,30 @@ export default function Vehiculos() {
 
       {/* Pagination */}
       {vehiculosFiltrados.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <p className="text-gray-600 dark:text-dark-400 text-sm">
-              Mostrando {startIndex}–{endIndex} de {vehiculosFiltrados.length}
-            </p>
-            <div className="flex items-center gap-2">
-              <label htmlFor="pageSize" className="text-gray-600 dark:text-dark-400 text-sm">
-                Mostrar:
-              </label>
-              <CustomSelect
-                options={[
-                  { value: '10', label: '10' },
-                  { value: '20', label: '20' },
-                  { value: '50', label: '50' },
-                ]}
-                value={pageSize.toString()}
-                onChange={(value) => {
-                  setPageSize(parseInt(value))
-                  setCurrentPage(1)
-                }}
-                placeholder="10"
-              />
-            </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
+          <p className="text-gray-600 dark:text-dark-400 text-sm order-1 sm:order-none">
+            Mostrando {startIndex}–{endIndex} de {vehiculosFiltrados.length}
+          </p>
+          <div className="flex items-center gap-2 order-2 sm:order-none">
+            <label htmlFor="pageSize" className="text-gray-600 dark:text-dark-400 text-sm whitespace-nowrap">
+              Mostrar:
+            </label>
+            <CustomSelect
+              options={[
+                { value: '5', label: '5' },
+                { value: '10', label: '10' },
+                { value: '20', label: '20' },
+                { value: 'todos', label: 'Todos' },
+              ]}
+              value={pageSize === 0 ? 'todos' : pageSize.toString()}
+              onChange={(value) => {
+                setPageSize(value === 'todos' ? 0 : parseInt(value, 10))
+                setCurrentPage(1)
+              }}
+              placeholder="10"
+            />
           </div>
-          
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 order-3 sm:order-none">
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
@@ -828,7 +827,6 @@ export default function Vehiculos() {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum: number
@@ -841,7 +839,6 @@ export default function Vehiculos() {
                 } else {
                   pageNum = currentPage - 2 + i
                 }
-                
                 return (
                   <button
                     key={pageNum}
@@ -859,7 +856,6 @@ export default function Vehiculos() {
                 )
               })}
             </div>
-            
             <button
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}

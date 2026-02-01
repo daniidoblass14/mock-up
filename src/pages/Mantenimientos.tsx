@@ -64,6 +64,29 @@ export default function Mantenimientos() {
     }
   }, [searchParams])
 
+  // Abrir modal "Añadir mantenimiento" si se llega desde Calendario con ?openAdd=1
+  useEffect(() => {
+    if (searchParams.get('openAdd') === '1') {
+      setFormData({
+        vehiculoId: '',
+        tipo: '',
+        fechaVencimiento: '',
+        odometro: '',
+        estado: 'auto',
+        costo: '',
+        notas: '',
+      })
+      setFieldErrors({})
+      setIsModalOpen(true)
+      setSearchParams(prev => {
+        const p = new URLSearchParams(prev)
+        p.delete('openAdd')
+        const o = Object.fromEntries(p)
+        return Object.keys(o).length > 0 ? o : {}
+      }, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
   const handleAdd = () => {
     setFormData({
       vehiculoId: '',

@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
-import { Plus, Search, ChevronLeft, ChevronRight, CheckCircle2, Filter } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, CheckCircle2, Filter, Wrench } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { vehiculosService } from '../services/vehiculos.service'
@@ -11,11 +12,11 @@ import CustomSelect from '../components/CustomSelect'
 import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function Calendario() {
-  const { tareasCalendario, addTareaCalendario, updateTareaCalendario, deleteTareaCalendario } = useApp()
+  const navigate = useNavigate()
+  const { tareasCalendario, updateTareaCalendario, deleteTareaCalendario } = useApp()
   const { showToast } = useToast()
   
   const [fechaActual, setFechaActual] = useState(new Date())
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [tareaSeleccionada, setTareaSeleccionada] = useState<TareaCalendario | null>(null)
@@ -41,16 +42,9 @@ export default function Calendario() {
   const diasMes = Array.from({ length: ultimoDiaMes.getDate() }, (_, i) => i + 1)
   const diasVacios = Array.from({ length: primerDiaSemana }, (_, i) => i)
 
-  const handleAdd = useCallback((fechaPrellenada?: string) => {
-    setFormData({
-      vehiculoId: '',
-      tipo: '',
-      fecha: fechaPrellenada || '',
-      odometro: '',
-    })
-    setTareaSeleccionada(null)
-    setIsModalOpen(true)
-  }, [])
+  const handleAddMantenimiento = useCallback(() => {
+    navigate('/mantenimientos?openAdd=1')
+  }, [navigate])
 
   const handleEdit = useCallback((tarea: TareaCalendario) => {
     setTareaSeleccionada(tarea)
@@ -96,20 +90,15 @@ export default function Calendario() {
       } else {
         showToast('Error al actualizar la tarea', 'error')
       }
-    } else {
-      addTareaCalendario(tareaData)
-      showToast('Tarea creada correctamente', 'success')
+      setIsEditModalOpen(false)
+      setTareaSeleccionada(null)
+      setFormData({
+        vehiculoId: '',
+        tipo: '',
+        fecha: '',
+        odometro: '',
+      })
     }
-
-    setIsModalOpen(false)
-    setIsEditModalOpen(false)
-    setTareaSeleccionada(null)
-    setFormData({
-      vehiculoId: '',
-      tipo: '',
-      fecha: '',
-      odometro: '',
-    })
   }
 
   const tareasFiltradas = useMemo(() => {
@@ -208,12 +197,12 @@ export default function Calendario() {
               />
             </div>
             <button
-              onClick={() => handleAdd()}
+              onClick={handleAddMantenimiento}
               className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-2"
-              aria-label="Nueva tarea"
+              aria-label="Añadir mantenimiento"
             >
-              <Plus className="w-5 h-5" />
-              <span>Nueva Tarea</span>
+              <Wrench className="w-5 h-5" />
+              <span>Añadir mantenimiento</span>
             </button>
           </div>
         </div>
@@ -262,7 +251,6 @@ export default function Calendario() {
                 onChange={(value) => setFiltroVehiculo(value)}
                 placeholder="Filtrar por vehículos"
                 leadingIcon={<Filter className="w-4 h-4" />}
-                helperText="Filtra las tareas por vehículo"
               />
             </div>
             <div className="flex-1 lg:flex-none lg:w-64 min-w-[200px]">
@@ -437,107 +425,6 @@ export default function Calendario() {
           </div>
         )}
       </div>
-
-      {/* Modal Nueva Tarea */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setFormData({
-            vehiculoId: '',
-            tipo: '',
-            fecha: '',
-            odometro: '',
-          })
-        }}
-        title="Nueva Tarea"
-        size="md"
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="vehiculo" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
-              Vehículo <span className="text-red-400">*</span>
-            </label>
-            <CustomSelect
-              options={vehiculos.map((v) => ({
-                value: v.id.toString(),
-                label: `${v.modelo} - ${v.matricula}`,
-              }))}
-              value={formData.vehiculoId}
-              onChange={(value) => setFormData({ ...formData, vehiculoId: value })}
-              placeholder="Seleccionar vehículo..."
-            />
-          </div>
-          <div>
-            <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
-              Tipo de Mantenimiento <span className="text-red-400">*</span>
-            </label>
-            <CustomSelect
-              options={TIPOS_MANTENIMIENTO.map((tipo) => ({
-                value: tipo,
-                label: tipo,
-              }))}
-              value={formData.tipo}
-              onChange={(value) => setFormData({ ...formData, tipo: value })}
-              placeholder="Seleccionar tipo..."
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="fecha" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
-                Fecha <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="date"
-                id="fecha"
-                required
-                value={formData.fecha}
-                onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
-                className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Fecha de la tarea"
-              />
-            </div>
-            <div>
-              <label htmlFor="odometro" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
-                Kilometraje (km)
-              </label>
-              <input
-                type="number"
-                id="odometro"
-                min="0"
-                value={formData.odometro}
-                onChange={(e) => setFormData({ ...formData, odometro: e.target.value })}
-                className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="Opcional"
-                aria-label="Kilometraje"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={() => {
-                setIsModalOpen(false)
-                setFormData({
-                  vehiculoId: '',
-                  tipo: '',
-                  fecha: '',
-                  odometro: '',
-                })
-              }}
-              className="px-4 py-2 bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
-            >
-              Guardar
-            </button>
-          </div>
-        </form>
-      </Modal>
 
       {/* Modal Editar Tarea */}
       <Modal
