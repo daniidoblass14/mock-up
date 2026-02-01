@@ -164,11 +164,11 @@ export default function Vehiculos() {
   }
 
   const handleEdit = (vehiculo: Vehiculo) => {
-    navigate(`/vehiculos/${vehiculo.id}`)
+    navigate(`/vehiculos/${vehiculo.id}?mode=edit`)
   }
 
   const handleView = (vehiculo: Vehiculo) => {
-    navigate(`/vehiculos/${vehiculo.id}`)
+    navigate(`/vehiculos/${vehiculo.id}?mode=view`)
   }
 
   const handleDelete = (id: number) => {

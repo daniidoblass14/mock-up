@@ -19,10 +19,33 @@ const ESTADO_OPTIONS = [
   { value: 'al-dia', label: 'Al día' },
 ]
 
+/** Parsea "YYYY-MM-DD" como fecha local (medianoche local). Evita que new Date(str) se interprete como UTC. */
+function parseDateStringYYYYMMDD(str: string): Date | undefined {
+  const trimmed = str?.trim()
+  if (!trimmed) return undefined
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed)
+  if (!match) return undefined
+  const year = parseInt(match[1], 10)
+  const month = parseInt(match[2], 10) - 1
+  const day = parseInt(match[3], 10)
+  if (month < 0 || month > 11 || day < 1 || day > 31) return undefined
+  const d = new Date(year, month, day)
+  if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day) return undefined
+  return d
+}
+
+/** Formatea Date a "YYYY-MM-DD" en hora local para input type="date". */
+function toDateStringYYYYMMDD(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 export default function Mantenimientos() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { mantenimientos, addMantenimiento, updateMantenimiento, deleteMantenimiento } = useApp()
+  const { mantenimientos, addMantenimiento, deleteMantenimiento } = useApp()
   const { showToast } = useToast()
   
   const [tabActivo, setTabActivo] = useState<'proximos' | 'vencidos' | 'completados'>(
@@ -30,8 +53,6 @@ export default function Mantenimientos() {
   )
   const [busqueda, setBusqueda] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [mantenimientoSeleccionado, setMantenimientoSeleccionado] = useState<Mantenimiento | null>(null)
   const [formData, setFormData] = useState({
     vehiculoId: '',
     tipo: '',
@@ -62,27 +83,15 @@ export default function Mantenimientos() {
       notas: '',
     })
     setFieldErrors({})
-    setMantenimientoSeleccionado(null)
     setIsModalOpen(true)
   }
 
   const handleEdit = (mantenimiento: Mantenimiento) => {
-    setMantenimientoSeleccionado(mantenimiento)
-    setFormData({
-      vehiculoId: mantenimiento.vehiculoId.toString(),
-      tipo: mantenimiento.tipo,
-      fechaVencimiento: mantenimiento.fechaVencimiento ? new Date(mantenimiento.fechaVencimiento).toISOString().split('T')[0] : '',
-      odometro: mantenimiento.odometro?.toString() || '',
-      estado: mantenimiento.estado,
-      costo: mantenimiento.costo?.toString() || '',
-      notas: mantenimiento.notas || '',
-    })
-    setFieldErrors({})
-    setIsEditModalOpen(true)
+    navigate(`/mantenimientos/${mantenimiento.id}?mode=edit`)
   }
 
   const handleView = (mantenimiento: Mantenimiento) => {
-    navigate(`/mantenimientos/${mantenimiento.id}`)
+    navigate(`/mantenimientos/${mantenimiento.id}?mode=view`)
   }
 
   const handleDelete = (id: number) => {
@@ -181,7 +190,12 @@ export default function Mantenimientos() {
       return
     }
     
-    const fechaVencimiento = formData.fechaVencimiento ? new Date(formData.fechaVencimiento) : undefined
+    const fechaVencimiento = parseDateStringYYYYMMDD(formData.fechaVencimiento) ?? undefined
+    if (!fechaVencimiento && formData.fechaVencimiento.trim()) {
+      setFieldErrors(prev => ({ ...prev, fechaVencimiento: 'Fecha objetivo no válida' }))
+      showToast('La fecha objetivo no es válida', 'error')
+      return
+    }
     // odometro es obligatorio, así que siempre debe tener un valor
     const odometro = parseInt(formData.odometro)
     
@@ -210,20 +224,14 @@ export default function Mantenimientos() {
       notas: formData.notas || undefined,
     }
     
-    if (mantenimientoSeleccionado) {
-      if (updateMantenimiento(mantenimientoSeleccionado.id, mantenimientoData)) {
-        showToast('Mantenimiento actualizado correctamente', 'success')
-      } else {
-        showToast('Error al actualizar el mantenimiento', 'error')
-      }
-    } else {
-      addMantenimiento(mantenimientoData)
-      showToast('Mantenimiento registrado correctamente', 'success')
-    }
-    
+    addMantenimiento(mantenimientoData)
+    showToast('Mantenimiento registrado correctamente', 'success')
+    // Cambiar a la pestaña donde aparece el nuevo mantenimiento para verlo en la tabla
+    const tabDondeAparece = estadoCalculado === 'completado' ? 'completados' : estadoCalculado === 'vencido' ? 'vencidos' : 'proximos'
+    setTabActivo(tabDondeAparece)
+    setSearchParams({ tab: tabDondeAparece })
+
     setIsModalOpen(false)
-    setIsEditModalOpen(false)
-    setMantenimientoSeleccionado(null)
     setFieldErrors({})
   }
 
@@ -287,10 +295,10 @@ export default function Mantenimientos() {
 
   const vehiculos = vehiculosService.getAll()
 
-  const renderForm = (isEdit: boolean = false) => (
+  const renderForm = () => (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor={isEdit ? 'edit-vehiculo' : 'vehiculo'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
+        <label htmlFor="vehiculo" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
           Vehículo <span className="text-red-400">*</span>
         </label>
         <CustomSelect
@@ -309,7 +317,7 @@ export default function Mantenimientos() {
         )}
       </div>
       <div>
-        <label htmlFor={isEdit ? 'edit-tipo' : 'tipo'} className="block text-sm font-medium text-dark-300 mb-2">
+        <label htmlFor="tipo" className="block text-sm font-medium text-dark-300 mb-2">
           Tipo de Mantenimiento <span className="text-red-400">*</span>
         </label>
         <CustomSelect
@@ -329,12 +337,12 @@ export default function Mantenimientos() {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor={isEdit ? 'edit-fechaVencimiento' : 'fechaVencimiento'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
+          <label htmlFor="fechaVencimiento" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Fecha objetivo <span className="text-red-400">*</span>
           </label>
           <input
             type="date"
-            id={isEdit ? 'edit-fechaVencimiento' : 'fechaVencimiento'}
+            id="fechaVencimiento"
             value={formData.fechaVencimiento}
             onChange={(e) => handleFieldChange('fechaVencimiento', e.target.value)}
             className={`w-full bg-dark-800 border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 ${
@@ -352,12 +360,12 @@ export default function Mantenimientos() {
           )}
         </div>
         <div>
-          <label htmlFor={isEdit ? 'edit-odometro' : 'odometro'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
+          <label htmlFor="odometro" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Km objetivo <span className="text-red-400">*</span>
           </label>
           <input
             type="number"
-            id={isEdit ? 'edit-odometro' : 'odometro'}
+            id="odometro"
             min="0"
             value={formData.odometro}
             onChange={(e) => handleFieldChange('odometro', e.target.value)}
@@ -395,12 +403,12 @@ export default function Mantenimientos() {
           </p>
         </div>
         <div>
-          <label htmlFor={isEdit ? 'edit-costo' : 'costo'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
+          <label htmlFor="costo" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Coste (€) <span className="text-red-400">*</span>
           </label>
           <input
             type="number"
-            id={isEdit ? 'edit-costo' : 'costo'}
+            id="costo"
             min="0"
             step="0.01"
             value={formData.costo}
@@ -422,11 +430,11 @@ export default function Mantenimientos() {
         </div>
       </div>
       <div>
-        <label htmlFor={isEdit ? 'edit-notas' : 'notas'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
+        <label htmlFor="notas" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
           Notas
         </label>
         <textarea
-          id={isEdit ? 'edit-notas' : 'notas'}
+          id="notas"
           rows={3}
           value={formData.notas}
           onChange={(e) => handleFieldChange('notas', e.target.value)}
@@ -440,8 +448,6 @@ export default function Mantenimientos() {
           type="button"
           onClick={() => {
             setIsModalOpen(false)
-            setIsEditModalOpen(false)
-            setMantenimientoSeleccionado(null)
             setFieldErrors({})
           }}
           className="px-4 py-2 bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
@@ -457,7 +463,7 @@ export default function Mantenimientos() {
               : 'bg-gray-300 dark:bg-dark-700 text-gray-500 dark:text-dark-400 cursor-not-allowed'
           }`}
         >
-          {isEdit ? 'Guardar cambios' : 'Guardar'}
+          Guardar
         </button>
       </div>
     </form>
@@ -727,32 +733,17 @@ export default function Mantenimientos() {
         </p>
       </div>
 
-      {/* Modal Add */}
+      {/* Modal Añadir mantenimiento */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false)
-          setMantenimientoSeleccionado(null)
           setFieldErrors({})
         }}
         title="Registrar Mantenimiento"
         size="lg"
       >
-        {renderForm(false)}
-      </Modal>
-
-      {/* Modal Edit */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false)
-          setMantenimientoSeleccionado(null)
-          setFieldErrors({})
-        }}
-        title="Editar Mantenimiento"
-        size="lg"
-      >
-        {renderForm(true)}
+        {renderForm()}
       </Modal>
 
 
