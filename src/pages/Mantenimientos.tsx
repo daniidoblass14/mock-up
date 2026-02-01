@@ -262,7 +262,7 @@ export default function Mantenimientos() {
       case 'al-dia':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/30'
       default:
-        return 'bg-dark-700 text-dark-300'
+        return 'bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-dark-300'
     }
   }
 
@@ -290,7 +290,7 @@ export default function Mantenimientos() {
   const renderForm = (isEdit: boolean = false) => (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor={isEdit ? 'edit-vehiculo' : 'vehiculo'} className="block text-sm font-medium text-dark-300 mb-2">
+        <label htmlFor={isEdit ? 'edit-vehiculo' : 'vehiculo'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
           Vehículo <span className="text-red-400">*</span>
         </label>
         <CustomSelect
@@ -329,7 +329,7 @@ export default function Mantenimientos() {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor={isEdit ? 'edit-fechaVencimiento' : 'fechaVencimiento'} className="block text-sm font-medium text-dark-300 mb-2">
+          <label htmlFor={isEdit ? 'edit-fechaVencimiento' : 'fechaVencimiento'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Fecha objetivo <span className="text-red-400">*</span>
           </label>
           <input
@@ -352,7 +352,7 @@ export default function Mantenimientos() {
           )}
         </div>
         <div>
-          <label htmlFor={isEdit ? 'edit-odometro' : 'odometro'} className="block text-sm font-medium text-dark-300 mb-2">
+          <label htmlFor={isEdit ? 'edit-odometro' : 'odometro'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Km objetivo <span className="text-red-400">*</span>
           </label>
           <input
@@ -361,10 +361,10 @@ export default function Mantenimientos() {
             min="0"
             value={formData.odometro}
             onChange={(e) => handleFieldChange('odometro', e.target.value)}
-            className={`w-full bg-dark-800 border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 ${
+            className={`w-full bg-white dark:bg-dark-800 border rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 ${
               fieldErrors.odometro
                 ? 'border-red-500 focus:ring-red-500'
-                : 'border-dark-700 focus:ring-primary-500'
+                : 'border-gray-300 dark:border-dark-700 focus:ring-primary-500'
             }`}
             placeholder="0"
             aria-label="Km objetivo"
@@ -388,14 +388,14 @@ export default function Mantenimientos() {
             onChange={(value) => handleFieldChange('estado', value)}
             placeholder="Seleccionar estado..."
           />
-          <p className="text-xs text-dark-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-dark-500 mt-1">
             {formData.estado === 'auto' 
               ? 'Se calculará automáticamente según fecha/kilometraje' 
               : 'Estado fijado manualmente'}
           </p>
         </div>
         <div>
-          <label htmlFor={isEdit ? 'edit-costo' : 'costo'} className="block text-sm font-medium text-dark-300 mb-2">
+          <label htmlFor={isEdit ? 'edit-costo' : 'costo'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Coste (€) <span className="text-red-400">*</span>
           </label>
           <input
@@ -405,10 +405,10 @@ export default function Mantenimientos() {
             step="0.01"
             value={formData.costo}
             onChange={(e) => handleFieldChange('costo', e.target.value)}
-            className={`w-full bg-dark-800 border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 ${
+            className={`w-full bg-white dark:bg-dark-800 border rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 ${
               fieldErrors.costo
                 ? 'border-red-500 focus:ring-red-500'
-                : 'border-dark-700 focus:ring-primary-500'
+                : 'border-gray-300 dark:border-dark-700 focus:ring-primary-500'
             }`}
             placeholder="0.00"
             aria-label="Coste en euros"
@@ -422,7 +422,7 @@ export default function Mantenimientos() {
         </div>
       </div>
       <div>
-        <label htmlFor={isEdit ? 'edit-notas' : 'notas'} className="block text-sm font-medium text-dark-300 mb-2">
+        <label htmlFor={isEdit ? 'edit-notas' : 'notas'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
           Notas
         </label>
         <textarea
@@ -430,7 +430,7 @@ export default function Mantenimientos() {
           rows={3}
           value={formData.notas}
           onChange={(e) => handleFieldChange('notas', e.target.value)}
-          className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-2 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="Notas adicionales sobre el mantenimiento..."
           aria-label="Notas"
         />
@@ -444,7 +444,7 @@ export default function Mantenimientos() {
             setMantenimientoSeleccionado(null)
             setFieldErrors({})
           }}
-          className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white hover:bg-dark-700 transition-colors"
+          className="px-4 py-2 bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
         >
           Cancelar
         </button>
@@ -454,7 +454,7 @@ export default function Mantenimientos() {
           className={`px-4 py-2 rounded-lg transition-colors ${
             isFormValid()
               ? 'bg-primary-500 hover:bg-primary-600 text-white cursor-pointer'
-              : 'bg-dark-700 text-dark-400 cursor-not-allowed'
+              : 'bg-gray-300 dark:bg-dark-700 text-gray-500 dark:text-dark-400 cursor-not-allowed'
           }`}
         >
           {isEdit ? 'Guardar cambios' : 'Guardar'}
@@ -467,8 +467,8 @@ export default function Mantenimientos() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Gestión de Mantenimiento</h1>
-        <p className="text-dark-400">
+        <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Gestión de Mantenimiento</h1>
+        <p className="text-gray-600 dark:text-dark-400">
           Supervisa el estado de tu flota. Mantén tus vehículos seguros y operativos.
         </p>
       </div>
@@ -476,13 +476,13 @@ export default function Mantenimientos() {
       {/* Action Bar */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <div className="flex-1 max-w-md relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400" />
           <input
             type="text"
             placeholder="Buscar vehículo o tarea..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full bg-dark-900 border border-dark-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full bg-white dark:bg-dark-900 border border-gray-300 dark:border-dark-800 rounded-lg pl-10 pr-4 py-3 text-dark-900 dark:text-white placeholder-gray-500 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm dark:shadow-none"
             aria-label="Buscar mantenimientos"
           />
         </div>
@@ -498,13 +498,13 @@ export default function Mantenimientos() {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-dark-400 text-sm mb-1">MANTENIMIENTOS VENCIDOS</p>
-              <p className="text-3xl font-bold text-white">{vencidos}</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">MANTENIMIENTOS VENCIDOS</p>
+              <p className="text-3xl font-bold text-dark-900 dark:text-white">{vencidos}</p>
               {vencidos > 0 && (
-                <p className="text-red-400 text-sm mt-1">Requieren atención</p>
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1">Requieren atención</p>
               )}
             </div>
             <div className="w-16 h-16 bg-red-500/20 rounded-lg flex items-center justify-center">
@@ -513,12 +513,12 @@ export default function Mantenimientos() {
           </div>
         </div>
 
-        <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-dark-400 text-sm mb-1">PRÓXIMOS 7 DÍAS</p>
-              <p className="text-3xl font-bold text-white">{proximos7Dias}</p>
-              <p className="text-dark-400 text-sm mt-1">tareas programadas</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">PRÓXIMOS 7 DÍAS</p>
+              <p className="text-3xl font-bold text-dark-900 dark:text-white">{proximos7Dias}</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mt-1">tareas programadas</p>
             </div>
             <div className="w-16 h-16 bg-orange-500/20 rounded-lg flex items-center justify-center">
               <Clock className="w-8 h-8 text-orange-500" />
@@ -526,12 +526,12 @@ export default function Mantenimientos() {
           </div>
         </div>
 
-        <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-dark-400 text-sm mb-1">COSTO ESTE MES</p>
-              <p className="text-3xl font-bold text-white">{formatCurrency(costoMes)}</p>
-              <p className="text-dark-400 text-sm mt-1">Total acumulado</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">COSTO ESTE MES</p>
+              <p className="text-3xl font-bold text-dark-900 dark:text-white">{formatCurrency(costoMes)}</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mt-1">Total acumulado</p>
             </div>
             <div className="w-16 h-16 bg-blue-500/20 rounded-lg flex items-center justify-center">
               <span className="text-2xl">€</span>
@@ -541,7 +541,7 @@ export default function Mantenimientos() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center justify-between border-b border-dark-800">
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-dark-800">
         <div className="flex gap-6">
           <button
             onClick={() => {
@@ -550,8 +550,8 @@ export default function Mantenimientos() {
             }}
             className={`pb-4 px-2 font-medium transition-colors relative ${
               tabActivo === 'proximos'
-                ? 'text-primary-400'
-                : 'text-dark-400 hover:text-white'
+                ? 'text-primary-500 dark:text-primary-400'
+                : 'text-gray-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white'
             }`}
             aria-label="Ver mantenimientos próximos"
           >
@@ -567,8 +567,8 @@ export default function Mantenimientos() {
             }}
             className={`pb-4 px-2 font-medium transition-colors relative flex items-center gap-2 ${
               tabActivo === 'vencidos'
-                ? 'text-primary-400'
-                : 'text-dark-400 hover:text-white'
+                ? 'text-primary-500 dark:text-primary-400'
+                : 'text-gray-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white'
             }`}
             aria-label="Ver mantenimientos vencidos"
           >
@@ -589,8 +589,8 @@ export default function Mantenimientos() {
             }}
             className={`pb-4 px-2 font-medium transition-colors relative ${
               tabActivo === 'completados'
-                ? 'text-primary-400'
-                : 'text-dark-400 hover:text-white'
+                ? 'text-primary-500 dark:text-primary-400'
+                : 'text-gray-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white'
             }`}
             aria-label="Ver mantenimientos completados"
           >
@@ -603,36 +603,36 @@ export default function Mantenimientos() {
       </div>
 
       {/* Table */}
-      <div className="bg-dark-900 border border-dark-800 rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-dark-800">
+            <thead className="bg-gray-50 dark:bg-dark-800">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   VEHÍCULO
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   TIPO DE MANTENIMIENTO
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   FECHA OBJETIVO / KM OBJETIVO
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   ESTADO
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   ACCIONES
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-dark-800">
+            <tbody className="divide-y divide-gray-200 dark:divide-dark-800">
               {mantenimientosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
-                    <Truck className="w-12 h-12 mx-auto mb-3 text-dark-500 opacity-50" />
-                    <p className="text-dark-400 text-sm">No se encontraron mantenimientos</p>
+                    <Truck className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
+                    <p className="text-gray-600 dark:text-dark-400 text-sm">No se encontraron mantenimientos</p>
                     {busqueda && (
-                      <p className="text-dark-500 text-xs mt-1">Intenta con otros términos de búsqueda</p>
+                      <p className="text-gray-500 dark:text-dark-500 text-xs mt-1">Intenta con otros términos de búsqueda</p>
                     )}
                   </td>
                 </tr>
@@ -641,25 +641,25 @@ export default function Mantenimientos() {
                   const vehiculo = vehiculosService.getById(mantenimiento.vehiculoId)
                   const EstadoIcon = getEstadoIcon(mantenimiento.estado)
                   return (
-                    <tr key={mantenimiento.id} className="hover:bg-dark-800 transition-colors">
+                    <tr key={mantenimiento.id} className="hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-dark-800 rounded-lg flex items-center justify-center">
-                            <Truck className="w-5 h-5 text-dark-400" />
+                          <div className="w-10 h-10 bg-gray-100 dark:bg-dark-800 rounded-lg flex items-center justify-center">
+                            <Truck className="w-5 h-5 text-gray-500 dark:text-dark-400" />
                           </div>
                           <div>
-                            <div className="text-white font-medium">{vehiculo?.modelo || 'N/A'}</div>
-                            <div className="text-dark-400 text-sm">Matrícula: {vehiculo?.matricula || 'N/A'}</div>
+                            <div className="text-dark-900 dark:text-white font-medium">{vehiculo?.modelo || 'N/A'}</div>
+                            <div className="text-gray-600 dark:text-dark-400 text-sm">Matrícula: {vehiculo?.matricula || 'N/A'}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-white font-medium">{mantenimiento.tipo}</div>
+                        <div className="text-dark-900 dark:text-white font-medium">{mantenimiento.tipo}</div>
                         {mantenimiento.costo && (
-                          <div className="text-dark-400 text-sm">{formatCurrency(mantenimiento.costo)}</div>
+                          <div className="text-gray-600 dark:text-dark-400 text-sm">{formatCurrency(mantenimiento.costo)}</div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-dark-300">
+                      <td className="px-6 py-4 text-gray-700 dark:text-dark-300">
                         <div className="space-y-1">
                           {mantenimiento.fechaVencimiento && (
                             <div>
@@ -722,7 +722,7 @@ export default function Mantenimientos() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <p className="text-dark-400 text-sm">
+        <p className="text-gray-600 dark:text-dark-400 text-sm">
           Mostrando {mantenimientosFiltrados.length} de {mantenimientos.length} tareas
         </p>
       </div>

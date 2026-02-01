@@ -200,16 +200,16 @@ export default function Calendario() {
       <div className="flex-1 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">Calendario de Mantenimiento</h1>
+          <h1 className="text-3xl font-bold text-dark-900 dark:text-white">Calendario de Mantenimiento</h1>
           <div className="flex gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400" />
               <input
                 type="text"
                 placeholder="Buscar tareas o vehículos..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="bg-dark-900 border border-dark-800 rounded-lg pl-10 pr-4 py-2 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="bg-white dark:bg-dark-900 border border-gray-300 dark:border-dark-800 rounded-lg pl-10 pr-4 py-2 text-dark-900 dark:text-white placeholder-gray-500 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm dark:shadow-none"
                 aria-label="Buscar tareas"
               />
             </div>
@@ -229,18 +229,18 @@ export default function Calendario() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => cambiarMes(-1)}
-              className="p-2 text-dark-400 hover:text-white transition-colors"
+              className="p-2 text-gray-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white transition-colors"
               title="Mes anterior"
               aria-label="Mes anterior"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="text-xl font-semibold text-dark-900 dark:text-white">
               {nombresMeses[mesActual]} {añoActual}
             </h2>
             <button
               onClick={() => cambiarMes(1)}
-              className="p-2 text-dark-400 hover:text-white transition-colors"
+              className="p-2 text-gray-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white transition-colors"
               title="Mes siguiente"
               aria-label="Mes siguiente"
             >
@@ -248,7 +248,7 @@ export default function Calendario() {
             </button>
             <button
               onClick={irAHoy}
-              className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-dark-300 hover:text-white transition-colors"
+              className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white transition-colors shadow-sm dark:shadow-none"
               aria-label="Ir a hoy"
             >
               Hoy
@@ -291,7 +291,7 @@ export default function Calendario() {
                   setFiltroVehiculo('')
                   setFiltroTipo('')
                 }}
-                className="px-3 py-2 bg-dark-700 hover:bg-dark-600 text-white rounded-lg text-sm transition-colors whitespace-nowrap"
+                className="px-3 py-2 bg-gray-200 dark:bg-dark-700 hover:bg-gray-300 dark:hover:bg-dark-600 text-dark-900 dark:text-white rounded-lg text-sm transition-colors whitespace-nowrap"
                 title="Limpiar filtros"
                 aria-label="Limpiar filtros"
               >
@@ -302,11 +302,11 @@ export default function Calendario() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
           {/* Days Header */}
           <div className="grid grid-cols-7 gap-2 mb-4">
             {nombresDias.map((dia) => (
-              <div key={dia} className="text-center text-dark-400 text-sm font-medium py-2">
+              <div key={dia} className="text-center text-gray-600 dark:text-dark-400 text-sm font-medium py-2">
                 {dia}
               </div>
             ))}
@@ -323,11 +323,13 @@ export default function Calendario() {
               return (
                 <div
                   key={dia}
-                  className={`aspect-square border border-dark-800 rounded-lg p-2 ${
-                    esHoyDia ? 'bg-primary-500/10 border-primary-500' : 'bg-dark-800'
+                  className={`aspect-square border rounded-lg p-2 ${
+                    esHoyDia
+                      ? 'bg-primary-500/10 border-primary-500 border'
+                      : 'bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-800'
                   }`}
                 >
-                  <div className={`text-sm font-medium mb-1 ${esHoyDia ? 'text-primary-400' : 'text-white'}`}>
+                  <div className={`text-sm font-medium mb-1 ${esHoyDia ? 'text-primary-500 dark:text-primary-400' : 'text-dark-900 dark:text-white'}`}>
                     {dia}
                   </div>
                   <div className="space-y-1">
@@ -335,7 +337,7 @@ export default function Calendario() {
                       <div
                         key={tarea.id}
                         onClick={() => handleView(tarea)}
-                        className={`text-xs p-1 rounded border-l-2 ${getTipoColor(tarea.tipo)} bg-dark-900 text-white truncate cursor-pointer hover:bg-dark-800 transition-colors`}
+                        className={`text-xs p-1 rounded border-l-2 ${getTipoColor(tarea.tipo)} bg-white dark:bg-dark-900 text-dark-900 dark:text-white truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors border border-gray-100 dark:border-transparent`}
                         title={`${tarea.vehiculo} · ${tarea.tipo}`}
                         role="button"
                         tabIndex={0}
@@ -350,7 +352,7 @@ export default function Calendario() {
                       </div>
                     ))}
                     {tareasDia.length > 2 && (
-                      <div className="text-xs text-dark-400">
+                      <div className="text-xs text-gray-500 dark:text-dark-400">
                         +{tareasDia.length - 2} más
                       </div>
                     )}
@@ -363,16 +365,16 @@ export default function Calendario() {
       </div>
 
       {/* Sidebar - This Week */}
-      <div className="w-80 bg-dark-900 border border-dark-800 rounded-lg p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">
+      <div className="w-80 bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
+        <h2 className="text-lg font-semibold text-dark-900 dark:text-white mb-4">
           Esta Semana
           {tareasEstaSemana.length > 0 && (
-            <span className="ml-2 text-sm text-dark-400">({tareasEstaSemana.length} pendientes)</span>
+            <span className="ml-2 text-sm text-gray-500 dark:text-dark-400">({tareasEstaSemana.length} pendientes)</span>
           )}
         </h2>
         <div className="space-y-4">
           {tareasEstaSemana.length === 0 ? (
-            <div className="text-center py-8 text-dark-400">
+            <div className="text-center py-8 text-gray-500 dark:text-dark-400">
               <CheckCircle2 className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No hay tareas para esta semana</p>
             </div>
@@ -401,7 +403,7 @@ export default function Calendario() {
                 <div
                   key={tarea.id}
                   onClick={() => handleView(tarea)}
-                  className={`p-4 rounded-lg border-l-4 ${getTipoColor(tarea.tipo)} bg-dark-800 cursor-pointer hover:bg-dark-700 transition-colors`}
+                  className={`p-4 rounded-lg border-l-4 ${getTipoColor(tarea.tipo)} bg-gray-50 dark:bg-dark-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors border border-gray-100 dark:border-transparent`}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
@@ -416,10 +418,10 @@ export default function Calendario() {
                       {etiqueta} • {new Date(tarea.fecha).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
                     </div>
                   )}
-                  <div className="text-white font-medium mb-1">{tarea.vehiculo}</div>
-                  <div className="text-dark-400 text-sm mb-1">{tarea.tipo}</div>
+                  <div className="text-dark-900 dark:text-white font-medium mb-1">{tarea.vehiculo}</div>
+                  <div className="text-gray-600 dark:text-dark-400 text-sm mb-1">{tarea.tipo}</div>
                   {tarea.odometro && (
-                    <div className="text-dark-400 text-xs mb-3">{formatNumber(tarea.odometro)} km</div>
+                    <div className="text-gray-500 dark:text-dark-400 text-xs mb-3">{formatNumber(tarea.odometro)} km</div>
                   )}
                 </div>
               )
@@ -427,14 +429,14 @@ export default function Calendario() {
           )}
         </div>
         {tareasEstaSemana.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-dark-800 text-center">
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-dark-800 text-center">
             <button
               onClick={() => {
                 const proximaSemana = new Date(hoy)
                 proximaSemana.setDate(proximaSemana.getDate() + 7)
                 setFechaActual(proximaSemana)
               }}
-              className="text-primary-400 hover:text-primary-300 text-sm"
+              className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 text-sm"
             >
               Ver próxima semana →
             </button>
@@ -459,7 +461,7 @@ export default function Calendario() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="vehiculo" className="block text-sm font-medium text-dark-300 mb-2">
+            <label htmlFor="vehiculo" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
               Vehículo <span className="text-red-400">*</span>
             </label>
             <CustomSelect
@@ -473,7 +475,7 @@ export default function Calendario() {
             />
           </div>
           <div>
-            <label htmlFor="tipo" className="block text-sm font-medium text-dark-300 mb-2">
+            <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
               Tipo de Mantenimiento <span className="text-red-400">*</span>
             </label>
             <CustomSelect
@@ -488,7 +490,7 @@ export default function Calendario() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="fecha" className="block text-sm font-medium text-dark-300 mb-2">
+              <label htmlFor="fecha" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                 Fecha <span className="text-red-400">*</span>
               </label>
               <input
@@ -497,12 +499,12 @@ export default function Calendario() {
                 required
                 value={formData.fecha}
                 onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
-                className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 aria-label="Fecha de la tarea"
               />
             </div>
             <div>
-              <label htmlFor="odometro" className="block text-sm font-medium text-dark-300 mb-2">
+              <label htmlFor="odometro" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                 Kilometraje (km)
               </label>
               <input
@@ -511,7 +513,7 @@ export default function Calendario() {
                 min="0"
                 value={formData.odometro}
                 onChange={(e) => setFormData({ ...formData, odometro: e.target.value })}
-                className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Opcional"
                 aria-label="Kilometraje"
               />
@@ -529,7 +531,7 @@ export default function Calendario() {
                   odometro: '',
                 })
               }}
-              className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white hover:bg-dark-700 transition-colors"
+              className="px-4 py-2 bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
             >
               Cancelar
             </button>
@@ -555,7 +557,7 @@ export default function Calendario() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="edit-vehiculo" className="block text-sm font-medium text-dark-300 mb-2">
+            <label htmlFor="edit-vehiculo" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
               Vehículo <span className="text-red-400">*</span>
             </label>
             <CustomSelect
@@ -569,7 +571,7 @@ export default function Calendario() {
             />
           </div>
           <div>
-            <label htmlFor="edit-tipo" className="block text-sm font-medium text-dark-300 mb-2">
+            <label htmlFor="edit-tipo" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
               Tipo de Mantenimiento <span className="text-red-400">*</span>
             </label>
             <CustomSelect
@@ -584,7 +586,7 @@ export default function Calendario() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="edit-fecha" className="block text-sm font-medium text-dark-300 mb-2">
+              <label htmlFor="edit-fecha" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                 Fecha <span className="text-red-400">*</span>
               </label>
               <input
@@ -593,12 +595,12 @@ export default function Calendario() {
                 required
                 value={formData.fecha}
                 onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
-                className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 aria-label="Fecha de la tarea"
               />
             </div>
             <div>
-              <label htmlFor="edit-odometro" className="block text-sm font-medium text-dark-300 mb-2">
+              <label htmlFor="edit-odometro" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                 Kilometraje (km)
               </label>
               <input
@@ -607,7 +609,7 @@ export default function Calendario() {
                 min="0"
                 value={formData.odometro}
                 onChange={(e) => setFormData({ ...formData, odometro: e.target.value })}
-                className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Opcional"
                 aria-label="Kilometraje"
               />
@@ -620,7 +622,7 @@ export default function Calendario() {
                 setIsEditModalOpen(false)
                 setTareaSeleccionada(null)
               }}
-              className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white hover:bg-dark-700 transition-colors"
+              className="px-4 py-2 bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
             >
               Cancelar
             </button>
@@ -649,17 +651,17 @@ export default function Calendario() {
           return (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-dark-300 mb-1">Vehículo</label>
-                <p className="text-white">{vehiculo?.modelo || 'N/A'}</p>
-                <p className="text-dark-400 text-sm">Matrícula: {vehiculo?.matricula || 'N/A'}</p>
+                <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-1">Vehículo</label>
+                <p className="text-dark-900 dark:text-white">{vehiculo?.modelo || 'N/A'}</p>
+                <p className="text-gray-600 dark:text-dark-400 text-sm">Matrícula: {vehiculo?.matricula || 'N/A'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-300 mb-1">Tipo de Mantenimiento</label>
-                <p className="text-white">{tareaSeleccionada.tipo}</p>
+                <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-1">Tipo de Mantenimiento</label>
+                <p className="text-dark-900 dark:text-white">{tareaSeleccionada.tipo}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-300 mb-1">Fecha</label>
-                <p className="text-white">
+                <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-1">Fecha</label>
+                <p className="text-dark-900 dark:text-white">
                   {new Date(tareaSeleccionada.fecha).toLocaleDateString('es-ES', {
                     weekday: 'long',
                     day: 'numeric',
@@ -670,8 +672,8 @@ export default function Calendario() {
               </div>
               {tareaSeleccionada.odometro && (
                 <div>
-                  <label className="block text-sm font-medium text-dark-300 mb-1">Kilometraje</label>
-                  <p className="text-white">{formatNumber(tareaSeleccionada.odometro)} km</p>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-1">Kilometraje</label>
+                  <p className="text-dark-900 dark:text-white">{formatNumber(tareaSeleccionada.odometro)} km</p>
                 </div>
               )}
               <div className="flex justify-end gap-3 pt-4">
