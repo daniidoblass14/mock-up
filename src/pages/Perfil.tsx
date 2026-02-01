@@ -147,9 +147,9 @@ export default function Perfil() {
           <button
             onClick={() => navigate('/dashboard')}
             className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors shadow-sm dark:shadow-none"
-            aria-label="Volver al dashboard"
+            aria-label="Volver al inicio"
           >
-            Volver al Dashboard
+            Volver al inicio
           </button>
         </div>
 

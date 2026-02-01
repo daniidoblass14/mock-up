@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   XAxis,
   YAxis,
@@ -50,9 +51,12 @@ function getBadgeLabel(nivel: NivelRecomendacion): string {
 type TabGraficas = 'por-vehiculo' | 'flota'
 
 export default function Graficas() {
+  const navigate = useNavigate()
   const { vehiculos, mantenimientos } = useApp()
   const [tabActivo, setTabActivo] = useState<TabGraficas>('por-vehiculo')
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState<string>('')
+
+  const sinDatosParaEstadisticas = vehiculos.length === 0 || mantenimientos.length === 0
 
   // ---- A) Resumen flota ----
   const resumenFlota = useMemo(() => {
@@ -175,6 +179,26 @@ export default function Graficas() {
         </p>
       </div>
 
+      {/* Empty state: sin datos para estadísticas */}
+      {sinDatosParaEstadisticas && (
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-12 shadow-sm dark:shadow-none flex flex-col items-center justify-center text-center max-w-lg mx-auto">
+          <TrendingUp className="w-16 h-16 text-gray-400 dark:text-dark-500 mb-4 opacity-60" />
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">Aún no hay datos para mostrar estadísticas</h2>
+          <p className="text-gray-600 dark:text-dark-400 text-sm mb-6">
+            Añade vehículos y registra mantenimientos para ver gráficas y recomendaciones.
+          </p>
+          <button
+            onClick={() => navigate('/vehiculos')}
+            className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+            aria-label="Ir a Vehículos"
+          >
+            Ir a Vehículos
+          </button>
+        </div>
+      )}
+
+      {!sinDatosParaEstadisticas && (
+      <>
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-dark-700">
         <nav className="flex gap-1" aria-label="Secciones de gráficas">
@@ -279,6 +303,11 @@ export default function Graficas() {
                 <p className="text-gray-700 dark:text-dark-300 text-sm">{recomendacion.texto}</p>
               </div>
             )}
+            {(datosCostesAcumulados.length === 0 || recomendacion?.nivel === 'insuficientes') && (
+              <p className="text-sm text-gray-500 dark:text-dark-500 mt-2">
+                Registra más mantenimientos para obtener recomendaciones más precisas.
+              </p>
+            )}
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -367,6 +396,7 @@ export default function Graficas() {
       </div>
       </>
       )}
+      </>)}
 
       {/* Disclaimer */}
       <div className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-800/50 p-4">

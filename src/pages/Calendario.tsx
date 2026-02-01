@@ -169,6 +169,13 @@ export default function Calendario() {
     }).sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
   }, [tareasFiltradas, inicioSemana, finSemana])
 
+  const hayEventosEnMes = useMemo(() => {
+    return tareasFiltradas.some(t => {
+      const f = new Date(t.fecha)
+      return f.getMonth() === mesActual && f.getFullYear() === añoActual
+    })
+  }, [tareasFiltradas, mesActual, añoActual])
+
   const vehiculos = vehiculosService.getAll()
 
   return (
@@ -330,6 +337,11 @@ export default function Calendario() {
             })}
           </div>
         </div>
+        {!hayEventosEnMes && (
+          <p className="text-center text-sm text-gray-500 dark:text-dark-400 mt-4">
+            No hay mantenimientos programados para este periodo.
+          </p>
+        )}
       </div>
 
       {/* Sidebar - This Week */}
@@ -419,7 +431,7 @@ export default function Calendario() {
           setIsEditModalOpen(false)
           setTareaSeleccionada(null)
         }}
-        title="Editar Tarea"
+        title="Editar tarea"
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -510,7 +522,7 @@ export default function Calendario() {
           setIsDetailModalOpen(false)
           setTareaSeleccionada(null)
         }}
-        title="Detalles de Tarea"
+        title="Detalle de la tarea"
         size="md"
       >
         {tareaSeleccionada && (() => {

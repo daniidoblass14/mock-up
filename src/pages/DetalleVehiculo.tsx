@@ -152,9 +152,9 @@ export default function DetalleVehiculo() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-dark-400 mb-2">
-            <button onClick={() => navigate('/vehiculos')} className="hover:text-dark-900 dark:hover:text-white transition-colors">Dashboard</button>
+            <button onClick={() => navigate('/vehiculos')} className="hover:text-dark-900 dark:hover:text-white transition-colors">Inicio</button>
             <span>/</span>
-            <button onClick={() => navigate('/vehiculos')} className="hover:text-dark-900 dark:hover:text-white transition-colors">Inventario</button>
+            <button onClick={() => navigate('/vehiculos')} className="hover:text-dark-900 dark:hover:text-white transition-colors">Vehículos</button>
             <span>/</span>
             <span className="text-dark-900 dark:text-white">{isEditMode ? 'Editar' : 'Detalle'}</span>
           </div>

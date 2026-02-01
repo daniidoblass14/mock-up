@@ -5,9 +5,9 @@ export default function Sidebar() {
   const navigate = useNavigate()
   
   const navItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/dashboard', icon: LayoutDashboard, label: 'Inicio' },
     { path: '/vehiculos', icon: Car, label: 'Vehículos' },
-    { path: '/mantenimientos', icon: Wrench, label: 'Mantenimiento' },
+    { path: '/mantenimientos', icon: Wrench, label: 'Mantenimientos' },
     { path: '/calendario', icon: Calendar, label: 'Calendario' },
     { path: '/graficas', icon: TrendingUp, label: 'Gráficas' },
   ]
@@ -22,7 +22,7 @@ export default function Sidebar() {
           </div>
           <div>
             <h1 className="text-dark-900 dark:text-white font-semibold text-lg">AutoLytix</h1>
-            <p className="text-gray-500 dark:text-dark-400 text-xs">Fleet Manager</p>
+            <p className="text-gray-500 dark:text-dark-400 text-xs">Gestión de flota</p>
           </div>
         </div>
       </div>
