@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Análisis de demo — no versionar
+docs/ANALISIS_DEMO_AUTOLYTIX.txt

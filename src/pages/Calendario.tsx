@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
-import { Search, ChevronLeft, ChevronRight, CheckCircle2, Filter, Wrench } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Search, ChevronLeft, ChevronRight, CheckCircle2, Filter } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { vehiculosService } from '../services/vehiculos.service'
@@ -12,7 +11,6 @@ import CustomSelect from '../components/CustomSelect'
 import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function Calendario() {
-  const navigate = useNavigate()
   const { tareasCalendario, updateTareaCalendario, deleteTareaCalendario } = useApp()
   const { showToast } = useToast()
   
@@ -41,10 +39,6 @@ export default function Calendario() {
 
   const diasMes = Array.from({ length: ultimoDiaMes.getDate() }, (_, i) => i + 1)
   const diasVacios = Array.from({ length: primerDiaSemana }, (_, i) => i)
-
-  const handleAddMantenimiento = useCallback(() => {
-    navigate('/mantenimientos?openAdd=1')
-  }, [navigate])
 
   const handleEdit = useCallback((tarea: TareaCalendario) => {
     setTareaSeleccionada(tarea)
@@ -184,26 +178,16 @@ export default function Calendario() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-dark-900 dark:text-white">Calendario de Mantenimiento</h1>
-          <div className="flex gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400" />
-              <input
-                type="text"
-                placeholder="Buscar tareas o vehículos..."
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                className="bg-white dark:bg-dark-900 border border-gray-300 dark:border-dark-800 rounded-lg pl-10 pr-4 py-2 text-dark-900 dark:text-white placeholder-gray-500 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm dark:shadow-none"
-                aria-label="Buscar tareas"
-              />
-            </div>
-            <button
-              onClick={handleAddMantenimiento}
-              className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-2"
-              aria-label="Añadir mantenimiento"
-            >
-              <Wrench className="w-5 h-5" />
-              <span>Añadir mantenimiento</span>
-            </button>
+          <div className="relative w-full max-w-xs">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400" />
+            <input
+              type="text"
+              placeholder="Buscar tareas o vehículos..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full bg-white dark:bg-dark-900 border border-gray-300 dark:border-dark-800 rounded-lg pl-10 pr-4 py-2 text-dark-900 dark:text-white placeholder-gray-500 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm dark:shadow-none"
+              aria-label="Buscar tareas"
+            />
           </div>
         </div>
 
@@ -237,8 +221,9 @@ export default function Calendario() {
               Hoy
             </button>
           </div>
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
             <div className="flex-1 lg:flex-none lg:w-56 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-1.5">Vehículo</label>
               <CustomSelect
                 options={[
                   { value: '', label: 'Todos los vehículos' },
@@ -249,14 +234,15 @@ export default function Calendario() {
                 ]}
                 value={filtroVehiculo}
                 onChange={(value) => setFiltroVehiculo(value)}
-                placeholder="Filtrar por vehículos"
+                placeholder="Todos los vehículos"
                 leadingIcon={<Filter className="w-4 h-4" />}
               />
             </div>
             <div className="flex-1 lg:flex-none lg:w-64 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-1.5">Tipo de mantenimiento</label>
               <CustomSelect
                 options={[
-                  { value: '', label: 'Todos los tipos de mantenimiento' },
+                  { value: '', label: 'Todos los tipos' },
                   ...TIPOS_MANTENIMIENTO.map((tipo) => ({
                     value: tipo,
                     label: tipo,
@@ -264,7 +250,7 @@ export default function Calendario() {
                 ]}
                 value={filtroTipo}
                 onChange={(value) => setFiltroTipo(value)}
-                placeholder="Todos los tipos de mantenimiento"
+                placeholder="Todos los tipos"
               />
             </div>
             {(filtroVehiculo || filtroTipo) && (

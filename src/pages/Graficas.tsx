@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react'
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -49,8 +47,11 @@ function getBadgeLabel(nivel: NivelRecomendacion): string {
   }
 }
 
+type TabGraficas = 'por-vehiculo' | 'flota'
+
 export default function Graficas() {
   const { vehiculos, mantenimientos } = useApp()
+  const [tabActivo, setTabActivo] = useState<TabGraficas>('por-vehiculo')
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState<string>('')
 
   // ---- A) Resumen flota ----
@@ -174,41 +175,37 @@ export default function Graficas() {
         </p>
       </div>
 
-      {/* A) Resumen flota */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-gray-600 dark:text-dark-400 text-sm">GASTO TOTAL FLOTA</p>
-            <DollarSign className="w-8 h-8 text-primary-500 dark:text-primary-400" />
-          </div>
-          <p className="text-2xl font-bold text-dark-900 dark:text-white">{formatCurrency(resumenFlota.gastoTotalFlota)}</p>
-          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">Acumulado histórico</p>
-        </div>
-        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-gray-600 dark:text-dark-400 text-sm">AÑO ACTUAL vs ANTERIOR</p>
-            <TrendingUp className="w-8 h-8 text-blue-500 dark:text-blue-400" />
-          </div>
-          <p className="text-2xl font-bold text-dark-900 dark:text-white">{formatCurrency(resumenFlota.gastoAñoActual)}</p>
-          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">
-            {AÑO_ACTUAL}: {formatCurrency(resumenFlota.gastoAñoActual)} · {AÑO_ANTERIOR}: {formatCurrency(resumenFlota.gastoAñoAnterior)}
-            {resumenFlota.gastoAñoAnterior > 0 && (
-              <span className={resumenFlota.variacionPorcentaje <= 0 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
-                {' '}({resumenFlota.variacionPorcentaje >= 0 ? '+' : ''}{resumenFlota.variacionPorcentaje.toFixed(1)} %)
-              </span>
-            )}
-          </p>
-        </div>
-        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-gray-600 dark:text-dark-400 text-sm">Nº DE VEHÍCULOS</p>
-            <Truck className="w-8 h-8 text-gray-500 dark:text-dark-400" />
-          </div>
-          <p className="text-2xl font-bold text-dark-900 dark:text-white">{resumenFlota.numVehiculos}</p>
-          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">En inventario</p>
-        </div>
+      {/* Tabs */}
+      <div className="border-b border-gray-200 dark:border-dark-700">
+        <nav className="flex gap-1" aria-label="Secciones de gráficas">
+          <button
+            type="button"
+            onClick={() => setTabActivo('por-vehiculo')}
+            className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              tabActivo === 'por-vehiculo'
+                ? 'bg-white dark:bg-dark-900 text-primary-600 dark:text-primary-400 border border-b-0 border-gray-200 dark:border-dark-700 -mb-px'
+                : 'text-gray-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white'
+            }`}
+          >
+            Por vehículo
+          </button>
+          <button
+            type="button"
+            onClick={() => setTabActivo('flota')}
+            className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              tabActivo === 'flota'
+                ? 'bg-white dark:bg-dark-900 text-primary-600 dark:text-primary-400 border border-b-0 border-gray-200 dark:border-dark-700 -mb-px'
+                : 'text-gray-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white'
+            }`}
+          >
+            Flota
+          </button>
+        </nav>
       </div>
 
+      {/* Tab: Por vehículo */}
+      {tabActivo === 'por-vehiculo' && (
+      <>
       {/* B) Análisis por vehículo */}
       <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
         <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-4">Análisis por vehículo</h2>
@@ -290,21 +287,67 @@ export default function Graficas() {
           </div>
         )}
       </div>
+      </>
+      )}
 
-      {/* C) Vista global flota */}
+      {/* Tab: Flota */}
+      {tabActivo === 'flota' && (
+      <>
+      {/* A) Resumen flota - KPIs globales */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-600 dark:text-dark-400 text-sm">GASTO TOTAL FLOTA</p>
+            <DollarSign className="w-8 h-8 text-primary-500 dark:text-primary-400" />
+          </div>
+          <p className="text-2xl font-bold text-dark-900 dark:text-white">{formatCurrency(resumenFlota.gastoTotalFlota)}</p>
+          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">Acumulado histórico</p>
+        </div>
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-600 dark:text-dark-400 text-sm">AÑO ACTUAL vs ANTERIOR</p>
+            <TrendingUp className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+          </div>
+          <p className="text-2xl font-bold text-dark-900 dark:text-white">{formatCurrency(resumenFlota.gastoAñoActual)}</p>
+          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">
+            {AÑO_ACTUAL}: {formatCurrency(resumenFlota.gastoAñoActual)} · {AÑO_ANTERIOR}: {formatCurrency(resumenFlota.gastoAñoAnterior)}
+            {resumenFlota.gastoAñoAnterior > 0 && (
+              <span className={resumenFlota.variacionPorcentaje <= 0 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
+                {' '}({resumenFlota.variacionPorcentaje >= 0 ? '+' : ''}{resumenFlota.variacionPorcentaje.toFixed(1)} %)
+              </span>
+            )}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-600 dark:text-dark-400 text-sm">Nº DE VEHÍCULOS</p>
+            <Truck className="w-8 h-8 text-gray-500 dark:text-dark-400" />
+          </div>
+          <p className="text-2xl font-bold text-dark-900 dark:text-white">{resumenFlota.numVehiculos}</p>
+          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">En inventario</p>
+        </div>
+      </div>
+
+      {/* C) Vista global flota - gráfico lineal/área */}
       <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
         <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">Gasto total por años (flota)</h2>
-        <p className="text-gray-600 dark:text-dark-400 text-sm mb-6">Comparativa anual del gasto en mantenimiento.</p>
+        <p className="text-gray-600 dark:text-dark-400 text-sm mb-6">Evolución anual del gasto en mantenimiento.</p>
         {datosGastoPorAños.length > 0 ? (
           <>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={datosGastoPorAños}>
+            <ResponsiveContainer width="100%" height={320}>
+              <AreaChart data={datosGastoPorAños}>
+                <defs>
+                  <linearGradient id="colorGastoFlota" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-dark-700" />
                 <XAxis dataKey="año" className="text-gray-600 dark:text-dark-400" tick={{ fontSize: 12 }} />
                 <YAxis tickFormatter={v => `€${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} className="text-gray-600 dark:text-dark-400" />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value: number | undefined) => (value != null ? formatCurrency(value) : '')} />
-                <Bar dataKey="coste" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Gasto" />
-              </BarChart>
+                <Tooltip contentStyle={tooltipStyle} formatter={(value: number | undefined) => (value != null ? formatCurrency(value) : '')} labelFormatter={label => `Año ${label}`} />
+                <Area type="monotone" dataKey="coste" stroke="#3b82f6" strokeWidth={2} fill="url(#colorGastoFlota)" name="Gasto" />
+              </AreaChart>
             </ResponsiveContainer>
             <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-dark-400">
               <span><strong className="text-dark-900 dark:text-white">{AÑO_ACTUAL}:</strong> {formatCurrency(resumenFlota.gastoAñoActual)}</span>
@@ -322,6 +365,8 @@ export default function Graficas() {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* Disclaimer */}
       <div className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-800/50 p-4">

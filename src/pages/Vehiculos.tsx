@@ -594,7 +594,6 @@ export default function Vehiculos() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="text-sm text-gray-500 dark:text-dark-400 mb-2">Dashboard &gt; Inventario</div>
         <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Inventario de Flota</h1>
         <p className="text-gray-600 dark:text-dark-400">
           Gestiona el estado y mantenimiento de tus {vehiculos.length} vehículos activos.
