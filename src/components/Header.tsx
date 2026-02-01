@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Bell, Search, X } from 'lucide-react'
+import { Bell, Search, X, Sun, Moon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { useTheme } from '../context/ThemeContext'
 import { vehiculosService } from '../services/vehiculos.service'
 
 interface SearchResult {
@@ -14,6 +15,7 @@ interface SearchResult {
 export default function Header() {
   const navigate = useNavigate()
   const { mantenimientos } = useApp()
+  const { theme, toggleTheme } = useTheme()
   const [searchQuery, setSearchQuery] = useState('')
   const [showResults, setShowResults] = useState(false)
   const [results, setResults] = useState<SearchResult[]>([])
@@ -134,16 +136,16 @@ export default function Header() {
   const vencidosCount = mantenimientos.filter(m => m.estado === 'vencido').length
 
   return (
-    <header className="h-16 bg-dark-900 border-b border-dark-800 flex items-center justify-between px-6">
+    <header className="h-16 bg-white border-b border-gray-200 dark:bg-dark-900 dark:border-dark-800 flex items-center justify-between px-6 shadow-sm dark:shadow-none">
       <div className="flex-1 max-w-md relative" ref={searchRef}>
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400" />
         <input
           type="text"
           placeholder="Buscar vehículos, mantenimientos..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setShowResults(results.length > 0)}
-          className="w-full bg-dark-800 border border-dark-700 rounded-lg pl-10 pr-10 py-2 text-white placeholder-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full bg-gray-100 border border-gray-300 dark:bg-dark-800 dark:border-dark-700 rounded-lg pl-10 pr-10 py-2 text-dark-900 placeholder-gray-500 dark:text-white dark:placeholder-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:focus:border-transparent"
           aria-label="Búsqueda global"
           aria-expanded={showResults}
           aria-controls="search-results"
@@ -155,7 +157,7 @@ export default function Header() {
               setSearchQuery('')
               setShowResults(false)
             }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-dark-400 hover:text-white transition-colors"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-dark-900 dark:text-dark-400 dark:hover:text-white transition-colors"
             aria-label="Limpiar búsqueda"
           >
             <X className="w-4 h-4" />
@@ -165,21 +167,21 @@ export default function Header() {
           <div
             id="search-results"
             ref={resultsRef}
-            className="absolute top-full mt-2 w-full bg-dark-800 border border-dark-700 rounded-lg shadow-lg max-h-64 overflow-y-auto z-50"
+            className="absolute top-full mt-2 w-full bg-white border border-gray-200 dark:bg-dark-800 dark:border-dark-700 rounded-lg shadow-lg max-h-64 overflow-y-auto z-50"
             role="listbox"
           >
             {results.map((result, idx) => (
               <button
                 key={`${result.type}-${result.id}-${idx}`}
                 onClick={() => handleResultClick(result)}
-                className={`w-full text-left px-4 py-3 hover:bg-dark-700 transition-colors border-b border-dark-700 last:border-b-0 ${
-                  idx === selectedIndex ? 'bg-dark-700' : ''
+                className={`w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors border-b border-gray-100 dark:border-dark-700 last:border-b-0 ${
+                  idx === selectedIndex ? 'bg-gray-100 dark:bg-dark-700' : ''
                 }`}
                 role="option"
                 aria-selected={idx === selectedIndex}
               >
-                <div className="text-white font-medium">{result.label}</div>
-                <div className="text-dark-400 text-xs mt-1">
+                <div className="text-dark-900 dark:text-white font-medium">{result.label}</div>
+                <div className="text-gray-500 dark:text-dark-400 text-xs mt-1">
                   {result.type === 'vehiculo' ? 'Vehículo' : 'Mantenimiento'} • {result.subtitle}
                 </div>
               </button>
@@ -187,10 +189,18 @@ export default function Header() {
           </div>
         )}
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-lg text-gray-600 hover:text-dark-900 hover:bg-gray-100 dark:text-dark-400 dark:hover:text-white dark:hover:bg-dark-800 transition-colors"
+          title={theme === 'dark' ? 'Modo día' : 'Modo noche'}
+          aria-label={theme === 'dark' ? 'Cambiar a modo día' : 'Cambiar a modo noche'}
+        >
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
         <button 
           onClick={() => navigate('/mantenimientos?tab=vencidos')}
-          className="relative p-2 text-dark-400 hover:text-white transition-colors"
+          className="relative p-2 text-gray-600 hover:text-dark-900 dark:text-dark-400 dark:hover:text-white transition-colors"
           title={`${vencidosCount} mantenimientos vencidos`}
           aria-label={`Notificaciones: ${vencidosCount} mantenimientos vencidos`}
         >

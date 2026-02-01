@@ -139,14 +139,14 @@ export default function Perfil() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Configuración de cuenta</h1>
-            <p className="text-dark-400">
+            <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Configuración de cuenta</h1>
+            <p className="text-gray-600 dark:text-dark-400">
               Gestiona tu perfil personal y la seguridad de tu cuenta.
             </p>
           </div>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white hover:bg-dark-700 transition-colors"
+            className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors shadow-sm dark:shadow-none"
             aria-label="Volver al dashboard"
           >
             Volver al Dashboard
@@ -154,17 +154,17 @@ export default function Perfil() {
         </div>
 
         {/* User Data Section */}
-        <div className="bg-gradient-to-br from-dark-900 to-dark-950 border border-dark-800 rounded-xl p-8 shadow-lg">
-          <h2 className="text-xl font-semibold text-white mb-6">Datos de usuario</h2>
+        <div className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-dark-800 rounded-xl p-8 shadow-md dark:shadow-lg">
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-6">Datos de usuario</h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Profile Picture */}
             <div className="flex flex-col items-center lg:items-start">
-              <div className="w-32 h-32 bg-dark-800 rounded-full flex items-center justify-center mb-4 overflow-hidden border-2 border-dark-700 shadow-lg">
+              <div className="w-32 h-32 bg-gray-100 dark:bg-dark-800 rounded-full flex items-center justify-center mb-4 overflow-hidden border-2 border-gray-200 dark:border-dark-700 shadow-lg">
                 {fotoPerfil ? (
                   <img src={fotoPerfil} alt="Foto de perfil" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl text-white font-semibold">JP</span>
+                  <span className="text-4xl text-dark-900 dark:text-white font-semibold">JP</span>
                 )}
               </div>
               <input
@@ -182,41 +182,41 @@ export default function Perfil() {
               >
                 Subir nueva foto
               </button>
-              <p className="text-xs text-dark-400 mt-2 text-center lg:text-left">JPG, PNG o GIF. Máx. 1MB.</p>
+              <p className="text-xs text-gray-500 dark:text-dark-400 mt-2 text-center lg:text-left">JPG, PNG o GIF. Máx. 1MB.</p>
             </div>
 
             {/* Form Fields */}
             <div className="lg:col-span-2 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="nombre" className="block text-sm font-medium text-dark-300 mb-2">
+                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                     Nombre completo
                   </label>
                   <div className="relative">
-                    <User className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                    <User className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400 pointer-events-none" />
                     <input
                       type="text"
                       id="nombre"
                       value={formData.nombre}
                       onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                      className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 pr-10 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       aria-label="Nombre completo"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-dark-300 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                     Correo electrónico
                   </label>
                   <div className="relative">
-                    <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                    <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400 pointer-events-none" />
                     <input
                       type="email"
                       id="email"
                       value={formData.email}
                       readOnly
-                      className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 opacity-60 cursor-not-allowed"
+                      className="w-full bg-gray-50 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 pr-10 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 opacity-60 cursor-not-allowed"
                       aria-label="Correo electrónico (no editable)"
                     />
                   </div>
@@ -225,34 +225,34 @@ export default function Perfil() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="empresa" className="block text-sm font-medium text-dark-300 mb-2">
+                  <label htmlFor="empresa" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                     Nombre de la empresa
                   </label>
                   <div className="relative">
-                    <Building className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                    <Building className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400 pointer-events-none" />
                     <input
                       type="text"
                       id="empresa"
                       value={formData.empresa}
                       onChange={(e) => setFormData({ ...formData, empresa: e.target.value })}
-                      className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 pr-10 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       aria-label="Nombre de la empresa"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="telefono" className="block text-sm font-medium text-dark-300 mb-2">
+                  <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                     Teléfono
                   </label>
                   <div className="relative">
-                    <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                    <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400 pointer-events-none" />
                     <input
                       type="tel"
                       id="telefono"
                       value={formData.telefono}
                       onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                      className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 pr-10 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="+34 600 123 456"
                       aria-label="Teléfono"
                     />
@@ -262,7 +262,7 @@ export default function Perfil() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-dark-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                     Rol
                   </label>
                   <CustomSelect
@@ -273,7 +273,7 @@ export default function Perfil() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-dark-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                     Idioma
                   </label>
                   <CustomSelect
@@ -285,7 +285,7 @@ export default function Perfil() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-dark-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                     Zona horaria
                   </label>
                   <CustomSelect
@@ -302,22 +302,22 @@ export default function Perfil() {
         </div>
 
         {/* Security Section */}
-        <div className="bg-gradient-to-br from-dark-900 to-dark-950 border border-dark-800 rounded-xl p-8 shadow-lg">
-          <h2 className="text-xl font-semibold text-white mb-6">Seguridad</h2>
+        <div className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-dark-800 rounded-xl p-8 shadow-md dark:shadow-lg">
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-6">Seguridad</h2>
           
           <div className="space-y-4">
             <div>
-              <label htmlFor="password-actual" className="block text-sm font-medium text-dark-300 mb-2">
+              <label htmlFor="password-actual" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                 Contraseña actual
               </label>
               <div className="relative">
-                <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400 pointer-events-none" />
                 <input
                   type="password"
                   id="password-actual"
                   value={passwordData.actual}
                   onChange={(e) => setPasswordData({ ...passwordData, actual: e.target.value })}
-                  className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 pr-10 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="••••••••"
                   aria-label="Contraseña actual"
                 />
@@ -326,7 +326,7 @@ export default function Perfil() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="password-nueva" className="block text-sm font-medium text-dark-300 mb-2">
+                <label htmlFor="password-nueva" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                   Nueva contraseña
                 </label>
                 <input
@@ -334,14 +334,14 @@ export default function Perfil() {
                   id="password-nueva"
                   value={passwordData.nueva}
                   onChange={(e) => setPasswordData({ ...passwordData, nueva: e.target.value })}
-                  className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Nueva contraseña"
                   aria-label="Nueva contraseña"
                 />
               </div>
 
               <div>
-                <label htmlFor="password-confirmar" className="block text-sm font-medium text-dark-300 mb-2">
+                <label htmlFor="password-confirmar" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
                   Confirmar contraseña
                 </label>
                 <input
@@ -349,8 +349,8 @@ export default function Perfil() {
                   id="password-confirmar"
                   value={passwordData.confirmar}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmar: e.target.value })}
-                  className={`w-full bg-dark-800 border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 ${
-                    errors.password ? 'border-red-500 focus:ring-red-500' : 'border-dark-700 focus:ring-primary-500'
+                  className={`w-full bg-white dark:bg-dark-800 border rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 ${
+                    errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-dark-700 focus:ring-primary-500'
                   }`}
                   placeholder="Repetir contraseña"
                   aria-label="Confirmar contraseña"
@@ -370,7 +370,7 @@ export default function Perfil() {
         <div className="flex items-center justify-between pt-4">
           <button
             onClick={handleLogout}
-            className="text-red-400 hover:text-red-300 flex items-center gap-2 transition-colors"
+            className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 flex items-center gap-2 transition-colors"
             aria-label="Cerrar sesión"
           >
             <ArrowRight className="w-4 h-4" />
@@ -379,7 +379,7 @@ export default function Perfil() {
           <div className="flex gap-3">
             <button
               onClick={handleCancel}
-              className="px-6 py-3 bg-dark-800 border border-dark-700 rounded-lg text-white hover:bg-dark-700 transition-colors"
+              className="px-6 py-3 bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
               aria-label="Cancelar cambios"
             >
               Cancelar

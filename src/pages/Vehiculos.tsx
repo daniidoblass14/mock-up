@@ -311,7 +311,7 @@ export default function Vehiculos() {
     }
     
     setIsModalOpen(false)
-    setIsEditModalOpen(false)
+    setIsModalOpen(false)
     setVehiculoSeleccionado(null)
     setMatriculaError('')
     setFieldErrors({})
@@ -390,7 +390,7 @@ export default function Vehiculos() {
       case 'vencido':
         return 'bg-red-500/20 text-red-400'
       default:
-        return 'bg-dark-700 text-dark-300'
+        return 'bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-dark-300'
     }
   }
 
@@ -422,7 +422,7 @@ export default function Vehiculos() {
         </div>
       )}
       <div>
-        <label htmlFor={isEdit ? 'edit-modelo' : 'modelo'} className="block text-sm font-medium text-dark-300 mb-2">
+        <label htmlFor={isEdit ? 'edit-modelo' : 'modelo'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
           Modelo <span className="text-red-400">*</span>
         </label>
         <CustomSelect
@@ -444,7 +444,7 @@ export default function Vehiculos() {
         )}
       </div>
       <div>
-        <label htmlFor={isEdit ? 'edit-tipo' : 'tipo'} className="block text-sm font-medium text-dark-300 mb-2">
+        <label htmlFor={isEdit ? 'edit-tipo' : 'tipo'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
           Tipo <span className="text-red-400">*</span>
         </label>
         <CustomSelect
@@ -456,7 +456,7 @@ export default function Vehiculos() {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor={isEdit ? 'edit-año' : 'año'} className="block text-sm font-medium text-dark-300 mb-2">
+          <label htmlFor={isEdit ? 'edit-año' : 'año'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Año <span className="text-red-400">*</span>
           </label>
           <CustomSelect
@@ -472,7 +472,7 @@ export default function Vehiculos() {
           )}
         </div>
         <div>
-          <label htmlFor={isEdit ? 'edit-matricula' : 'matricula'} className="block text-sm font-medium text-dark-300 mb-2">
+          <label htmlFor={isEdit ? 'edit-matricula' : 'matricula'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Matrícula <span className="text-red-400">*</span>
           </label>
           <input
@@ -488,10 +488,10 @@ export default function Vehiculos() {
             }}
             placeholder="0000-AAA"
             maxLength={8}
-            className={`w-full bg-dark-800 border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 ${
+            className={`w-full bg-white dark:bg-dark-800 border rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 ${
               matriculaError || fieldErrors.matricula
                 ? 'border-red-500 focus:ring-red-500'
-                : 'border-dark-700 focus:ring-primary-500'
+                : 'border-gray-300 dark:border-dark-700 focus:ring-primary-500'
             }`}
             aria-label="Matrícula del vehículo"
             aria-invalid={!!(matriculaError || fieldErrors.matricula)}
@@ -505,7 +505,7 @@ export default function Vehiculos() {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor={isEdit ? 'edit-vin' : 'vin'} className="block text-sm font-medium text-dark-300 mb-2">
+          <label htmlFor={isEdit ? 'edit-vin' : 'vin'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             VIN (opcional)
           </label>
           <input
@@ -520,7 +520,7 @@ export default function Vehiculos() {
           />
         </div>
         <div>
-          <label htmlFor={isEdit ? 'edit-kilometrajeActual' : 'kilometrajeActual'} className="block text-sm font-medium text-dark-300 mb-2">
+          <label htmlFor={isEdit ? 'edit-kilometrajeActual' : 'kilometrajeActual'} className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
             Kilometraje Actual (km) <span className="text-red-400">*</span>
           </label>
           <input
@@ -530,10 +530,10 @@ export default function Vehiculos() {
             value={formData.kilometrajeActual}
             onChange={(e) => handleFieldChange('kilometrajeActual', e.target.value)}
             placeholder="0"
-            className={`w-full bg-dark-800 border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 ${
+            className={`w-full bg-white dark:bg-dark-800 border rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 ${
               fieldErrors.kilometrajeActual
                 ? 'border-red-500 focus:ring-red-500'
-                : 'border-dark-700 focus:ring-primary-500'
+                : 'border-gray-300 dark:border-dark-700 focus:ring-primary-500'
             }`}
             aria-label="Kilometraje actual del vehículo"
             aria-invalid={!!fieldErrors.kilometrajeActual}
@@ -546,7 +546,7 @@ export default function Vehiculos() {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-dark-300 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
           Estado <span className="text-red-400">*</span>
         </label>
         <CustomSelect
@@ -566,13 +566,13 @@ export default function Vehiculos() {
           type="button"
           onClick={() => {
             setIsModalOpen(false)
-            setIsEditModalOpen(false)
+            setIsModalOpen(false)
             setVehiculoSeleccionado(null)
             setMatriculaError('')
             setFieldErrors({})
             setDuplicateError('')
           }}
-          className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white hover:bg-dark-700 transition-colors"
+          className="px-4 py-2 bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
         >
           Cancelar
         </button>
@@ -582,7 +582,7 @@ export default function Vehiculos() {
           className={`px-4 py-2 rounded-lg transition-colors ${
             isFormValid()
               ? 'bg-primary-500 hover:bg-primary-600 text-white cursor-pointer'
-              : 'bg-dark-700 text-dark-400 cursor-not-allowed'
+              : 'bg-gray-300 dark:bg-dark-700 text-gray-500 dark:text-dark-400 cursor-not-allowed'
           }`}
         >
           {isEdit ? 'Guardar cambios' : 'Guardar'}
@@ -595,9 +595,9 @@ export default function Vehiculos() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="text-sm text-dark-400 mb-2">Dashboard &gt; Inventario</div>
-        <h1 className="text-3xl font-bold text-white mb-2">Inventario de Flota</h1>
-        <p className="text-dark-400">
+        <div className="text-sm text-gray-500 dark:text-dark-400 mb-2">Dashboard &gt; Inventario</div>
+        <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Inventario de Flota</h1>
+        <p className="text-gray-600 dark:text-dark-400">
           Gestiona el estado y mantenimiento de tus {vehiculos.length} vehículos activos.
         </p>
       </div>
@@ -605,13 +605,13 @@ export default function Vehiculos() {
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <div className="flex-1 max-w-md relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400" />
           <input
             type="text"
             placeholder="Buscar por matrícula, modelo o VIN..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full bg-dark-900 border border-dark-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full bg-white dark:bg-dark-900 border border-gray-300 dark:border-dark-800 rounded-lg pl-10 pr-4 py-3 text-dark-900 dark:text-white placeholder-gray-500 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm dark:shadow-none"
             aria-label="Buscar vehículos"
           />
         </div>
@@ -624,7 +624,7 @@ export default function Vehiculos() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filtro === 'todos'
                 ? 'bg-primary-500 text-white'
-                : 'bg-dark-800 text-dark-300 hover:text-white'
+                : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white border border-gray-300 dark:border-transparent shadow-sm dark:shadow-none'
             }`}
             aria-label="Mostrar todos los vehículos"
           >
@@ -638,7 +638,7 @@ export default function Vehiculos() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               filtro === 'al-dia'
                 ? 'bg-primary-500 text-white'
-                : 'bg-dark-800 text-dark-300 hover:text-white'
+                : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white border border-gray-300 dark:border-transparent shadow-sm dark:shadow-none'
             }`}
             aria-label="Filtrar vehículos al día"
           >
@@ -653,7 +653,7 @@ export default function Vehiculos() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               filtro === 'proximo'
                 ? 'bg-primary-500 text-white'
-                : 'bg-dark-800 text-dark-300 hover:text-white'
+                : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white border border-gray-300 dark:border-transparent shadow-sm dark:shadow-none'
             }`}
             aria-label="Filtrar vehículos próximos"
           >
@@ -668,7 +668,7 @@ export default function Vehiculos() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               filtro === 'vencido'
                 ? 'bg-primary-500 text-white'
-                : 'bg-dark-800 text-dark-300 hover:text-white'
+                : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white border border-gray-300 dark:border-transparent shadow-sm dark:shadow-none'
             }`}
             aria-label="Filtrar vehículos vencidos"
           >
@@ -688,36 +688,36 @@ export default function Vehiculos() {
       </div>
 
       {/* Table */}
-      <div className="bg-dark-900 border border-dark-800 rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-dark-800">
+            <thead className="bg-gray-50 dark:bg-dark-800">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   MODELO / VEHÍCULO
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
                   MATRÍCULA
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   PRÓX. MANTENIMIENTO
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   ESTADO
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-dark-400 uppercase tracking-wider">
                   ACCIONES
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-dark-800">
+            <tbody className="divide-y divide-gray-200 dark:divide-dark-800">
               {vehiculosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
-                    <Truck className="w-12 h-12 mx-auto mb-3 text-dark-500 opacity-50" />
-                    <p className="text-dark-400 text-sm">No se encontraron vehículos</p>
+                    <Truck className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
+                    <p className="text-gray-600 dark:text-dark-400 text-sm">No se encontraron vehículos</p>
                     {busqueda && (
-                      <p className="text-dark-500 text-xs mt-1">Intenta con otros términos de búsqueda</p>
+                      <p className="text-gray-500 dark:text-dark-500 text-xs mt-1">Intenta con otros términos de búsqueda</p>
                     )}
                   </td>
                 </tr>
@@ -725,24 +725,24 @@ export default function Vehiculos() {
                 vehiculosPaginados.map((vehiculo) => {
                   const proximoMantenimiento = calcularProximoMantenimiento(vehiculo.id)
                   return (
-                    <tr key={vehiculo.id} className="hover:bg-dark-800 transition-colors">
+                    <tr key={vehiculo.id} className="hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-dark-800 rounded-lg flex items-center justify-center">
-                            <Truck className="w-5 h-5 text-dark-400" />
+                          <div className="w-10 h-10 bg-gray-100 dark:bg-dark-800 rounded-lg flex items-center justify-center">
+                            <Truck className="w-5 h-5 text-gray-500 dark:text-dark-400" />
                           </div>
                           <div>
-                            <div className="text-white font-medium">{vehiculo.modelo}</div>
-                            <div className="text-dark-400 text-sm">{vehiculo.tipo} • {vehiculo.año}</div>
+                            <div className="text-dark-900 dark:text-white font-medium">{vehiculo.modelo}</div>
+                            <div className="text-gray-600 dark:text-dark-400 text-sm">{vehiculo.tipo} • {vehiculo.año}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-block px-3 py-1 bg-dark-800 rounded-full text-dark-300 text-sm font-medium">
+                        <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-dark-800 rounded-full text-gray-700 dark:text-dark-300 text-sm font-medium">
                           {vehiculo.matricula}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-dark-300">
+                      <td className="px-6 py-4 text-gray-700 dark:text-dark-300">
                         {proximoMantenimiento}
                       </td>
                       <td className="px-6 py-4">
@@ -794,11 +794,11 @@ export default function Vehiculos() {
       {vehiculosFiltrados.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <p className="text-dark-400 text-sm">
+            <p className="text-gray-600 dark:text-dark-400 text-sm">
               Mostrando {startIndex}–{endIndex} de {vehiculosFiltrados.length}
             </p>
             <div className="flex items-center gap-2">
-              <label htmlFor="pageSize" className="text-dark-400 text-sm">
+              <label htmlFor="pageSize" className="text-gray-600 dark:text-dark-400 text-sm">
                 Mostrar:
               </label>
               <CustomSelect
@@ -823,8 +823,8 @@ export default function Vehiculos() {
               disabled={currentPage === 1}
               className={`p-2 rounded-lg transition-colors ${
                 currentPage === 1
-                  ? 'bg-dark-800 text-dark-500 cursor-not-allowed'
-                  : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'
+                  ? 'bg-gray-100 dark:bg-dark-800 text-gray-400 dark:text-dark-500 cursor-not-allowed'
+                  : 'bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-dark-700 border border-gray-300 dark:border-transparent'
               }`}
               aria-label="Página anterior"
             >
@@ -851,7 +851,7 @@ export default function Vehiculos() {
                     className={`min-w-[2.5rem] px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       currentPage === pageNum
                         ? 'bg-primary-500 text-white'
-                        : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'
+                        : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-700 border border-gray-300 dark:border-transparent'
                     }`}
                     aria-label={`Ir a página ${pageNum}`}
                     aria-current={currentPage === pageNum ? 'page' : undefined}
@@ -867,8 +867,8 @@ export default function Vehiculos() {
               disabled={currentPage === totalPages}
               className={`p-2 rounded-lg transition-colors ${
                 currentPage === totalPages
-                  ? 'bg-dark-800 text-dark-500 cursor-not-allowed'
-                  : 'bg-dark-800 text-dark-300 hover:text-white hover:bg-dark-700'
+                  ? 'bg-gray-100 dark:bg-dark-800 text-gray-400 dark:text-dark-500 cursor-not-allowed'
+                  : 'bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-dark-700 border border-gray-300 dark:border-transparent'
               }`}
               aria-label="Página siguiente"
             >

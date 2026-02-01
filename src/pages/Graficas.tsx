@@ -117,17 +117,17 @@ export default function Graficas() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Análisis de Costes</h1>
-          <p className="text-dark-400">
+          <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Análisis de Costes</h1>
+          <p className="text-gray-600 dark:text-dark-400">
             Visualiza los costes acumulados y métricas de mantenimiento
           </p>
         </div>
       </div>
 
       {/* Selector de Vehículo */}
-      <div className="bg-dark-900 border border-dark-800 rounded-lg p-4">
+      <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-4 shadow-sm dark:shadow-none">
         <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-dark-300 whitespace-nowrap">
+          <label className="text-sm font-medium text-gray-700 dark:text-dark-300 whitespace-nowrap">
             Filtrar por vehículo:
           </label>
           <div className="flex-1 max-w-md">
@@ -149,57 +149,57 @@ export default function Graficas() {
 
       {/* Métricas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-dark-400 text-sm mb-1">TOTAL GASTADO</p>
-              <p className="text-3xl font-bold text-white">{formatCurrency(metricas.totalGastado)}</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">TOTAL GASTADO</p>
+              <p className="text-3xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricas.totalGastado)}</p>
             </div>
             <div className="w-16 h-16 bg-primary-500/20 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-8 h-8 text-primary-400" />
+              <DollarSign className="w-8 h-8 text-primary-500 dark:text-primary-400" />
             </div>
           </div>
-          <p className="text-dark-400 text-sm">
+          <p className="text-gray-600 dark:text-dark-400 text-sm">
             {vehiculoActual ? `Desde ${vehiculoActual.año}` : 'Total acumulado'}
           </p>
         </div>
 
-        <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-dark-400 text-sm mb-1">GASTO ANUAL MEDIO</p>
-              <p className="text-3xl font-bold text-white">{formatCurrency(metricas.gastoAnualMedio)}</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">GASTO ANUAL MEDIO</p>
+              <p className="text-3xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricas.gastoAnualMedio)}</p>
             </div>
             <div className="w-16 h-16 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-8 h-8 text-blue-400" />
+              <TrendingUp className="w-8 h-8 text-blue-500 dark:text-blue-400" />
             </div>
           </div>
-          <p className="text-dark-400 text-sm">
+          <p className="text-gray-600 dark:text-dark-400 text-sm">
             {metricas.añosConGastos > 0 ? `Promedio de ${metricas.añosConGastos} años` : 'Sin datos suficientes'}
           </p>
         </div>
 
-        <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-dark-400 text-sm mb-1">ÚLTIMOS 12 MESES</p>
-              <p className="text-3xl font-bold text-white">{formatCurrency(metricas.gastoUltimos12Meses)}</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">ÚLTIMOS 12 MESES</p>
+              <p className="text-3xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricas.gastoUltimos12Meses)}</p>
             </div>
             <div className="w-16 h-16 bg-green-500/20 rounded-lg flex items-center justify-center">
-              <Calendar className="w-8 h-8 text-green-400" />
+              <Calendar className="w-8 h-8 text-green-500 dark:text-green-400" />
             </div>
           </div>
-          <p className="text-dark-400 text-sm">Gasto reciente</p>
+          <p className="text-gray-600 dark:text-dark-400 text-sm">Gasto reciente</p>
         </div>
       </div>
 
       {/* Gráfica de Costes Acumulados */}
-      <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+      <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-white mb-2">
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">
             Costes Acumulados {vehiculoActual ? `- ${vehiculoActual.modelo}` : ''}
           </h2>
-          <p className="text-dark-400 text-sm">
+          <p className="text-gray-600 dark:text-dark-400 text-sm">
             Evolución del gasto acumulado desde {datosCostesAcumulados[0]?.año || 'el inicio'}
           </p>
         </div>
@@ -245,20 +245,20 @@ export default function Graficas() {
         ) : (
           <div className="h-96 flex items-center justify-center">
             <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-dark-500 opacity-50" />
-              <p className="text-dark-400 text-sm">No hay datos de costes para mostrar</p>
+              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
+              <p className="text-gray-600 dark:text-dark-400 text-sm">No hay datos de costes para mostrar</p>
             </div>
           </div>
         )}
       </div>
 
       {/* Gráfica de Costes por Año */}
-      <div className="bg-dark-900 border border-dark-800 rounded-lg p-6">
+      <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-white mb-2">
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">
             Costes por Año {vehiculoActual ? `- ${vehiculoActual.modelo}` : ''}
           </h2>
-          <p className="text-dark-400 text-sm">
+          <p className="text-gray-600 dark:text-dark-400 text-sm">
             Desglose del gasto anual
           </p>
         </div>
@@ -291,8 +291,8 @@ export default function Graficas() {
         ) : (
           <div className="h-72 flex items-center justify-center">
             <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-dark-500 opacity-50" />
-              <p className="text-dark-400 text-sm">No hay datos de costes para mostrar</p>
+              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
+              <p className="text-gray-600 dark:text-dark-400 text-sm">No hay datos de costes para mostrar</p>
             </div>
           </div>
         )}
@@ -300,19 +300,19 @@ export default function Graficas() {
 
       {/* Estimación */}
       {estimacion && (
-        <div className="bg-gradient-to-br from-dark-900 to-dark-950 border border-orange-500/20 rounded-lg p-6">
+        <div className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-orange-500/20 rounded-lg p-6 shadow-sm dark:shadow-none">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-6 h-6 text-orange-400" />
+              <AlertCircle className="w-6 h-6 text-orange-500 dark:text-orange-400" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-white mb-2">Estimación de Costes</h3>
-              <p className="text-dark-300">
-                A este ritmo de gasto anual medio de <span className="text-white font-semibold">{formatCurrency(metricas.gastoAnualMedio)}</span>,
-                en aproximadamente <span className="text-white font-semibold">{estimacion.años} años</span> el coste anual 
-                superaría <span className="text-white font-semibold">{formatCurrency(estimacion.umbral)}</span>.
+              <h3 className="text-lg font-semibold text-dark-900 dark:text-white mb-2">Estimación de Costes</h3>
+              <p className="text-gray-700 dark:text-dark-300">
+                A este ritmo de gasto anual medio de <span className="text-dark-900 dark:text-white font-semibold">{formatCurrency(metricas.gastoAnualMedio)}</span>,
+                en aproximadamente <span className="text-dark-900 dark:text-white font-semibold">{estimacion.años} años</span> el coste anual 
+                superaría <span className="text-dark-900 dark:text-white font-semibold">{formatCurrency(estimacion.umbral)}</span>.
               </p>
-              <p className="text-dark-400 text-sm mt-2">
+              <p className="text-gray-600 dark:text-dark-400 text-sm mt-2">
                 * Esta es una estimación simple basada en el promedio histórico. Los costes reales pueden variar.
               </p>
             </div>
