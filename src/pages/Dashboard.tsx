@@ -1,14 +1,37 @@
-import { CheckCircle2, Clock, AlertTriangle, DollarSign, ArrowRight, Plus } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { CheckCircle2, Clock, AlertTriangle, DollarSign, ArrowRight, Plus, X, Info } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { vehiculosService } from '../services/vehiculos.service'
 import { formatCurrency } from '../utils/currency'
 
+const ONBOARDING_STORAGE_KEY = 'autolytix_demo_onboarding_seen'
+
 export default function Dashboard() {
   const navigate = useNavigate()
   const { vehiculos, mantenimientos } = useApp()
   const { showToast } = useToast()
+  const [showOnboarding, setShowOnboarding] = useState(true)
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(ONBOARDING_STORAGE_KEY) === 'true') {
+        setShowOnboarding(false)
+      }
+    } catch {
+      // mantener visible si falla localStorage
+    }
+  }, [])
+
+  const handleCloseOnboarding = () => {
+    try {
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true')
+    } catch {
+      // ignore
+    }
+    setShowOnboarding(false)
+  }
 
   const today = new Date().toLocaleDateString('es-ES', {
     weekday: 'long',
@@ -96,9 +119,51 @@ export default function Dashboard() {
           aria-label="Registrar nuevo vehículo"
         >
           <Plus className="w-4 h-4" />
-          <span>Registrar Vehículo</span>
+          <span>Registrar vehículo</span>
         </button>
       </div>
+
+      {/* Onboarding: card informativa (solo si no se ha cerrado antes) */}
+      {showOnboarding && (
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-5 shadow-sm dark:shadow-none relative">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex gap-3 min-w-0">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary-500/10 dark:bg-primary-500/20 flex items-center justify-center">
+                <Info className="w-5 h-5 text-primary-500 dark:text-primary-400" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold text-dark-900 dark:text-white mb-1">Qué puedes hacer en esta demo</h2>
+                <p className="text-gray-600 dark:text-dark-400 text-sm mb-3">
+                  Esta demo muestra cómo AutoLytix te ayuda a gestionar vehículos, mantenimientos y costes.
+                </p>
+                <ul className="text-sm text-gray-600 dark:text-dark-400 space-y-1 list-disc list-inside">
+                  <li>Gestionar tu flota de vehículos.</li>
+                  <li>Registrar y consultar mantenimientos.</li>
+                  <li>Visualizar mantenimientos en el calendario.</li>
+                  <li>Analizar costes y tendencias con gráficas.</li>
+                  <li>Recibir recomendaciones orientativas basadas en los datos.</li>
+                </ul>
+                <button
+                  type="button"
+                  onClick={handleCloseOnboarding}
+                  className="mt-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors"
+                  aria-label="Entendido, ocultar"
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleCloseOnboarding}
+              className="flex-shrink-0 p-2 text-gray-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-800 rounded-lg transition-colors"
+              aria-label="Ocultar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

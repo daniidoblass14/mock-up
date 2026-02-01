@@ -24,7 +24,7 @@ export default function Login() {
               <div className="w-3 h-3 bg-green-500 rounded-full mt-2"></div>
               <div>
                 <div className="h-1 w-32 bg-primary-500/30 mb-2"></div>
-                <p className="text-primary-400 font-medium">ESTADO MOTOR: OK</p>
+                <p className="text-primary-400 font-medium">ESTADO MOTOR: Correcto</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -134,7 +134,7 @@ export default function Login() {
 
           {/* Footer */}
           <p className="mt-8 text-center text-xs text-gray-500 dark:text-dark-500">
-            © 2024 AutoLytix Inc. Todos los derechos reservados.
+            © 2024 AutoLytix. Todos los derechos reservados.
           </p>
         </div>
       </div>

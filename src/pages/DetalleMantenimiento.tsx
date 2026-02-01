@@ -170,7 +170,7 @@ export default function DetalleMantenimiento() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-dark-400 mb-2">
-            <button onClick={() => navigate('/mantenimientos')} className="hover:text-dark-900 dark:hover:text-white transition-colors">Dashboard</button>
+            <button onClick={() => navigate('/mantenimientos')} className="hover:text-dark-900 dark:hover:text-white transition-colors">Inicio</button>
             <span>/</span>
             <button onClick={() => navigate('/mantenimientos')} className="hover:text-dark-900 dark:hover:text-white transition-colors">Mantenimientos</button>
             <span>/</span>
@@ -266,8 +266,8 @@ export default function DetalleMantenimiento() {
                   <Truck className="w-5 h-5 text-primary-500 dark:text-primary-400" />
                   <label className="text-sm font-medium text-gray-700 dark:text-dark-300">Vehículo</label>
                 </div>
-                <p className="text-dark-900 dark:text-white font-semibold text-lg">{vehiculo?.modelo || 'N/A'}</p>
-                <p className="text-gray-600 dark:text-dark-400 text-sm mt-1">Matrícula: {vehiculo?.matricula || 'N/A'}</p>
+                <p className="text-dark-900 dark:text-white font-semibold text-lg">{vehiculo?.modelo || '—'}</p>
+                <p className="text-gray-600 dark:text-dark-400 text-sm mt-1">Matrícula: {vehiculo?.matricula || '—'}</p>
                 {vehiculo && (
                   <button onClick={() => navigate(`/vehiculos/${vehiculo.id}?mode=view`)} className="mt-3 text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 text-sm transition-colors">Ver detalle del vehículo →</button>
                 )}

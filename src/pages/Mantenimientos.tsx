@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, Search, Truck, Clock, AlertTriangle, Eye, Edit, Trash2, CheckCircle2 } from 'lucide-react'
+import { Plus, Search, Truck, Clock, AlertTriangle, Eye, Edit, Trash2, CheckCircle2, Wrench } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
@@ -550,7 +550,7 @@ export default function Mantenimientos() {
         <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">COSTO ESTE MES</p>
+              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">COSTE ESTE MES</p>
               <p className="text-3xl font-bold text-dark-900 dark:text-white">{formatCurrency(costoMes)}</p>
               <p className="text-gray-600 dark:text-dark-400 text-sm mt-1">Total acumulado</p>
             </div>
@@ -623,7 +623,28 @@ export default function Mantenimientos() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Empty state global: sin mantenimientos */}
+      {mantenimientos.length === 0 && (
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-12 shadow-sm dark:shadow-none flex flex-col items-center justify-center text-center max-w-lg mx-auto">
+          <Wrench className="w-16 h-16 text-gray-400 dark:text-dark-500 mb-4 opacity-60" />
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">Aún no hay mantenimientos</h2>
+          <p className="text-gray-600 dark:text-dark-400 text-sm mb-6">
+            Registra el primer mantenimiento para llevar el control de tu flota.
+          </p>
+          <button
+            onClick={handleAdd}
+            className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-2"
+            aria-label="Registrar mantenimiento"
+          >
+            <Plus className="w-5 h-5" />
+            Añadir mantenimiento
+          </button>
+        </div>
+      )}
+
+      {/* Table - solo si hay mantenimientos */}
+      {mantenimientos.length > 0 && (
+      <>
       <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -651,10 +672,22 @@ export default function Mantenimientos() {
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
                     <Truck className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
-                    <p className="text-gray-600 dark:text-dark-400 text-sm">No se encontraron mantenimientos</p>
-                    {busqueda && (
-                      <p className="text-gray-500 dark:text-dark-500 text-xs mt-1">Intenta con otros términos de búsqueda</p>
-                    )}
+                    <p className="text-gray-600 dark:text-dark-400 text-sm font-medium mb-1">
+                      {tabActivo === 'proximos' && 'No hay mantenimientos próximos'}
+                      {tabActivo === 'vencidos' && 'No hay mantenimientos vencidos'}
+                      {tabActivo === 'completados' && 'No hay mantenimientos completados'}
+                    </p>
+                    <p className="text-gray-500 dark:text-dark-500 text-xs mb-4">
+                      {busqueda ? 'No coinciden con tu búsqueda.' : 'Registra uno cuando lo tengas.'}
+                    </p>
+                    <button
+                      onClick={handleAdd}
+                      className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm transition-colors inline-flex items-center gap-2"
+                      aria-label="Registrar mantenimiento"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Añadir mantenimiento
+                    </button>
                   </td>
                 </tr>
               ) : (
@@ -669,8 +702,8 @@ export default function Mantenimientos() {
                             <Truck className="w-5 h-5 text-gray-500 dark:text-dark-400" />
                           </div>
                           <div>
-                            <div className="text-dark-900 dark:text-white font-medium">{vehiculo?.modelo || 'N/A'}</div>
-                            <div className="text-gray-600 dark:text-dark-400 text-sm">Matrícula: {vehiculo?.matricula || 'N/A'}</div>
+                            <div className="text-dark-900 dark:text-white font-medium">{vehiculo?.modelo || '—'}</div>
+                            <div className="text-gray-600 dark:text-dark-400 text-sm">Matrícula: {vehiculo?.matricula || '—'}</div>
                           </div>
                         </div>
                       </td>
@@ -741,12 +774,13 @@ export default function Mantenimientos() {
         </div>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-gray-600 dark:text-dark-400 text-sm">
           Mostrando {mantenimientosFiltrados.length} de {mantenimientos.length} tareas
         </p>
       </div>
+      </>
+      )}
 
       {/* Modal Añadir mantenimiento */}
       <Modal
@@ -755,7 +789,7 @@ export default function Mantenimientos() {
           setIsModalOpen(false)
           setFieldErrors({})
         }}
-        title="Registrar Mantenimiento"
+        title="Registrar mantenimiento"
         size="lg"
       >
         {renderForm()}

@@ -189,7 +189,13 @@ export default function Header() {
           </div>
         )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <span
+          className="inline-flex items-center text-xs font-medium text-gray-500 dark:text-dark-400 bg-gray-100 dark:bg-dark-800 rounded-md px-2.5 py-1 whitespace-nowrap"
+          aria-label="Aplicación en modo demo con datos de ejemplo"
+        >
+          Modo demo · Datos de ejemplo
+        </span>
         <button
           onClick={toggleTheme}
           className="p-2 rounded-lg text-gray-600 hover:text-dark-900 hover:bg-gray-100 dark:text-dark-400 dark:hover:text-white dark:hover:bg-dark-800 transition-colors"

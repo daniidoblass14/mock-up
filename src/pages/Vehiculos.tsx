@@ -596,11 +596,34 @@ export default function Vehiculos() {
       <div>
         <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Inventario de Flota</h1>
         <p className="text-gray-600 dark:text-dark-400">
-          Gestiona el estado y mantenimiento de tus {vehiculos.length} vehículos activos.
+          {vehiculos.length === 0
+            ? 'Gestiona el estado y mantenimiento de tus vehículos.'
+            : `Gestiona el estado y mantenimiento de tus ${vehiculos.length} vehículos activos.`}
         </p>
       </div>
 
-      {/* Search and Filters */}
+      {/* Empty state: sin vehículos */}
+      {vehiculos.length === 0 && (
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-12 shadow-sm dark:shadow-none flex flex-col items-center justify-center text-center max-w-lg mx-auto">
+          <Truck className="w-16 h-16 text-gray-400 dark:text-dark-500 mb-4 opacity-60" />
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">Aún no tienes vehículos</h2>
+          <p className="text-gray-600 dark:text-dark-400 text-sm mb-6">
+            Añade tu primer vehículo para empezar a registrar mantenimientos y ver estadísticas.
+          </p>
+          <button
+            onClick={handleAdd}
+            className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-2"
+            aria-label="Añadir vehículo"
+          >
+            <Plus className="w-5 h-5" />
+            Añadir vehículo
+          </button>
+        </div>
+      )}
+
+      {/* Search and Filters + Table + Pagination - solo si hay vehículos */}
+      {vehiculos.length > 0 && (
+      <>
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <div className="flex-1 max-w-md relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-dark-400" />
@@ -713,10 +736,7 @@ export default function Vehiculos() {
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
                     <Truck className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
-                    <p className="text-gray-600 dark:text-dark-400 text-sm">No se encontraron vehículos</p>
-                    {busqueda && (
-                      <p className="text-gray-500 dark:text-dark-500 text-xs mt-1">Intenta con otros términos de búsqueda</p>
-                    )}
+                    <p className="text-gray-600 dark:text-dark-400 text-sm">No hay vehículos que coincidan con tu búsqueda o filtros.</p>
                   </td>
                 </tr>
               ) : (
@@ -871,6 +891,9 @@ export default function Vehiculos() {
         </div>
       )}
 
+      </>
+      )}
+
       {/* Modal Add */}
       <Modal
         isOpen={isModalOpen}
@@ -881,7 +904,7 @@ export default function Vehiculos() {
           setFieldErrors({})
           setDuplicateError('')
         }}
-        title="Añadir Vehículo"
+        title="Añadir vehículo"
         size="lg"
       >
         {renderForm(false)}
