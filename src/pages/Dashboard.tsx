@@ -90,23 +90,14 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Resumen de Flota</h1>
           <p className="text-gray-600 dark:text-dark-400">{today}</p>
         </div>
-        <div className="flex gap-3">
-          <button 
-            onClick={() => showToast('Filtros próximamente disponibles', 'info')}
-            className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-gray-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white hover:border-gray-400 dark:hover:border-dark-600 transition-colors flex items-center gap-2 shadow-sm dark:shadow-none"
-            aria-label="Filtrar"
-          >
-            <span>Filtrar</span>
-          </button>
-          <button 
-            onClick={handleRegistrarVehiculo}
-            className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-2"
-            aria-label="Registrar nuevo vehículo"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Registrar Vehículo</span>
-          </button>
-        </div>
+        <button 
+          onClick={handleRegistrarVehiculo}
+          className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-2"
+          aria-label="Registrar nuevo vehículo"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Registrar Vehículo</span>
+        </button>
       </div>
 
       {/* Summary Cards */}
