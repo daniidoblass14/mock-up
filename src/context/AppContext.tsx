@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { Vehiculo, vehiculosService } from '../services/vehiculos.service'
 import { Mantenimiento, mantenimientosService } from '../services/mantenimientos.service'
 import { TareaCalendario, calendarioService } from '../services/calendario.service'
+import { loadInitialData, persistData } from '../data/persistence'
 
 interface AppContextType {
   vehiculos: Vehiculo[]
@@ -37,6 +38,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    loadInitialData()
     refreshAll()
   }, [refreshAll])
 
@@ -44,6 +46,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const nuevo = vehiculosService.add(vehiculo)
       refreshAll()
+      persistData()
       return nuevo
     } catch (error) {
       console.error('Error adding vehiculo:', error)
@@ -54,7 +57,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateVehiculo = useCallback((id: number, vehiculo: Partial<Omit<Vehiculo, 'id'>>): Vehiculo | null => {
     try {
       const actualizado = vehiculosService.update(id, vehiculo)
-      if (actualizado) refreshAll()
+      if (actualizado) {
+        refreshAll()
+        persistData()
+      }
       return actualizado
     } catch (error) {
       console.error('Error updating vehiculo:', error)
@@ -65,7 +71,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const deleteVehiculo = useCallback((id: number): boolean => {
     try {
       const eliminado = vehiculosService.delete(id)
-      if (eliminado) refreshAll()
+      if (eliminado) {
+        refreshAll()
+        persistData()
+      }
       return eliminado
     } catch (error) {
       console.error('Error deleting vehiculo:', error)
@@ -95,6 +104,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       
       refreshAll()
+      persistData()
       return nuevo
     } catch (error) {
       console.error('Error adding mantenimiento:', error)
@@ -143,6 +153,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
         }
         refreshAll()
+        persistData()
       }
       return actualizado
     } catch (error) {
@@ -154,7 +165,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const deleteMantenimiento = useCallback((id: number): boolean => {
     try {
       const eliminado = mantenimientosService.delete(id)
-      if (eliminado) refreshAll()
+      if (eliminado) {
+        refreshAll()
+        persistData()
+      }
       return eliminado
     } catch (error) {
       console.error('Error deleting mantenimiento:', error)

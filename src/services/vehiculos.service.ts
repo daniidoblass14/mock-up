@@ -398,6 +398,13 @@ class VehiculosService {
     this.vehiculos.splice(index, 1)
     return true
   }
+
+  /** Reemplaza todo el listado (para hidratar desde localStorage o mock). Actualiza nextId. */
+  replaceAll(vehiculos: Vehiculo[]): void {
+    this.vehiculos = vehiculos.length > 0 ? [...vehiculos] : []
+    const maxId = this.vehiculos.length > 0 ? Math.max(...this.vehiculos.map(v => v.id)) : 0
+    this.nextId = maxId + 1
+  }
 }
 
 export const vehiculosService = new VehiculosService()

@@ -1,324 +1,335 @@
 import { useState, useMemo } from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from 'recharts'
-import { TrendingUp, DollarSign, Calendar, AlertCircle } from 'lucide-react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+} from 'recharts'
+import { TrendingUp, DollarSign, AlertCircle, Truck, Info } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { mantenimientosService } from '../services/mantenimientos.service'
-import { vehiculosService } from '../services/vehiculos.service'
-import { formatCurrency, formatNumber } from '../utils/currency'
+import { formatCurrency } from '../utils/currency'
+import { getRecomendacion, type NivelRecomendacion } from '../utils/recomendacion'
 import CustomSelect from '../components/CustomSelect'
+
+const AÑO_ACTUAL = new Date().getFullYear()
+const AÑO_ANTERIOR = AÑO_ACTUAL - 1
+
+function getBadgeClasses(nivel: NivelRecomendacion): string {
+  switch (nivel) {
+    case 'mantener':
+      return 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/40'
+    case 'vigilar':
+      return 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/40'
+    case 'valorar-cambio':
+      return 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30'
+    case 'insuficientes':
+      return 'bg-gray-200 dark:bg-dark-700 text-gray-600 dark:text-dark-400 border-gray-300 dark:border-dark-600'
+    default:
+      return 'bg-gray-200 dark:bg-dark-700 text-gray-600 dark:text-dark-400'
+  }
+}
+
+function getBadgeLabel(nivel: NivelRecomendacion): string {
+  switch (nivel) {
+    case 'mantener':
+      return 'Mantener'
+    case 'vigilar':
+      return 'Vigilar'
+    case 'valorar-cambio':
+      return 'Valorar cambio'
+    case 'insuficientes':
+      return 'Datos insuficientes'
+    default:
+      return nivel
+  }
+}
 
 export default function Graficas() {
   const { vehiculos, mantenimientos } = useApp()
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState<string>('')
 
-  // Obtener mantenimientos del vehículo seleccionado o todos
-  const mantenimientosFiltrados = useMemo(() => {
-    if (!vehiculoSeleccionado) {
-      return mantenimientos
+  // ---- A) Resumen flota ----
+  const resumenFlota = useMemo(() => {
+    const totalFlota = mantenimientos.reduce((sum, m) => sum + (m.costo ?? 0), 0)
+    const gastoAñoActual = mantenimientos
+      .filter(m => m.fechaVencimiento && new Date(m.fechaVencimiento).getFullYear() === AÑO_ACTUAL)
+      .reduce((sum, m) => sum + (m.costo ?? 0), 0)
+    const gastoAñoAnterior = mantenimientos
+      .filter(m => m.fechaVencimiento && new Date(m.fechaVencimiento).getFullYear() === AÑO_ANTERIOR)
+      .reduce((sum, m) => sum + (m.costo ?? 0), 0)
+    const variacion =
+      gastoAñoAnterior > 0
+        ? ((gastoAñoActual - gastoAñoAnterior) / gastoAñoAnterior) * 100
+        : 0
+    return {
+      gastoTotalFlota: totalFlota,
+      gastoAñoActual,
+      gastoAñoAnterior,
+      variacionPorcentaje: variacion,
+      numVehiculos: vehiculos.length,
     }
+  }, [mantenimientos, vehiculos.length])
+
+  // ---- B) Análisis por vehículo: datos filtrados y acumulado ----
+  const mantenimientosFiltrados = useMemo(() => {
+    if (!vehiculoSeleccionado) return mantenimientos
     return mantenimientos.filter(m => m.vehiculoId.toString() === vehiculoSeleccionado)
   }, [mantenimientos, vehiculoSeleccionado])
 
-  // Calcular costes acumulados por año
   const datosCostesAcumulados = useMemo(() => {
-    const hoy = new Date()
-    const añoActual = hoy.getFullYear()
     const años: Record<number, number> = {}
-    
-    // Inicializar años desde el año del vehículo hasta hoy
     mantenimientosFiltrados.forEach(m => {
-      if (m.costo && m.fechaVencimiento) {
+      if (m.costo != null && m.fechaVencimiento) {
         const año = new Date(m.fechaVencimiento).getFullYear()
-        años[año] = (años[año] || 0) + m.costo
+        años[año] = (años[año] ?? 0) + m.costo
       }
     })
-
-    // Si hay vehículo seleccionado, obtener su año de compra
-    let añoInicio = añoActual - 5 // Por defecto últimos 5 años
+    let añoInicio = AÑO_ACTUAL - 5
     if (vehiculoSeleccionado) {
-      const vehiculo = vehiculos.find(v => v.id.toString() === vehiculoSeleccionado)
-      if (vehiculo) {
-        añoInicio = vehiculo.año
-      }
+      const v = vehiculos.find(x => x.id.toString() === vehiculoSeleccionado)
+      if (v) añoInicio = v.año
     }
-
-    // Crear array de datos acumulados
     const datos: Array<{ año: string; coste: number; acumulado: number }> = []
     let acumulado = 0
-
-    for (let año = añoInicio; año <= añoActual; año++) {
-      const costeAño = años[año] || 0
+    for (let año = añoInicio; año <= AÑO_ACTUAL; año++) {
+      const costeAño = años[año] ?? 0
       acumulado += costeAño
-      datos.push({
-        año: año.toString(),
-        coste: costeAño,
-        acumulado: acumulado
-      })
+      datos.push({ año: año.toString(), coste: costeAño, acumulado })
     }
-
     return datos
   }, [mantenimientosFiltrados, vehiculoSeleccionado, vehiculos])
 
-  // Calcular métricas
-  const metricas = useMemo(() => {
-    const totalGastado = mantenimientosFiltrados.reduce((sum, m) => sum + (m.costo || 0), 0)
-    
-    // Calcular gasto anual medio
-    const añosConGastos = new Set<number>()
+  const metricasVehiculo = useMemo(() => {
+    const totalGastado = mantenimientosFiltrados.reduce((sum, m) => sum + (m.costo ?? 0), 0)
+    const añosSet = new Set<number>()
     mantenimientosFiltrados.forEach(m => {
-      if (m.costo && m.fechaVencimiento) {
-        añosConGastos.add(new Date(m.fechaVencimiento).getFullYear())
+      if (m.costo != null && m.fechaVencimiento) {
+        añosSet.add(new Date(m.fechaVencimiento).getFullYear())
       }
     })
-    const gastoAnualMedio = añosConGastos.size > 0 ? totalGastado / añosConGastos.size : 0
-
-    // Calcular últimos 12 meses
-    const hoy = new Date()
-    const hace12Meses = new Date(hoy)
+    const añosConDatos = añosSet.size
+    const gastoAnualMedio = añosConDatos > 0 ? totalGastado / añosConDatos : 0
+    const hace12Meses = new Date()
     hace12Meses.setMonth(hace12Meses.getMonth() - 12)
-    
     const gastoUltimos12Meses = mantenimientosFiltrados
       .filter(m => {
-        if (!m.costo || !m.fechaVencimiento) return false
-        const fecha = new Date(m.fechaVencimiento)
-        return fecha >= hace12Meses && fecha <= hoy
+        if (m.costo == null || !m.fechaVencimiento) return false
+        const f = new Date(m.fechaVencimiento)
+        return f >= hace12Meses && f <= new Date()
       })
-      .reduce((sum, m) => sum + (m.costo || 0), 0)
-
+      .reduce((sum, m) => sum + (m.costo ?? 0), 0)
     return {
       totalGastado,
       gastoAnualMedio,
       gastoUltimos12Meses,
-      añosConGastos: añosConGastos.size
+      añosConDatos,
     }
   }, [mantenimientosFiltrados])
 
-  // Estimación simple
-  const estimacion = useMemo(() => {
-    if (metricas.gastoAnualMedio === 0) {
-      return null
-    }
-
-    const umbral = 10000 // €10,000 como ejemplo
-    const añosParaSuperar = umbral / metricas.gastoAnualMedio
-
-    return {
-      años: Math.ceil(añosParaSuperar),
-      umbral
-    }
-  }, [metricas.gastoAnualMedio])
-
-  const vehiculoActual = vehiculoSeleccionado 
+  const vehiculoActual = vehiculoSeleccionado
     ? vehiculos.find(v => v.id.toString() === vehiculoSeleccionado)
     : null
+
+  const recomendacion = useMemo(() => {
+    if (!vehiculoActual) return null
+    return getRecomendacion(vehiculoActual, mantenimientos)
+  }, [vehiculoActual, mantenimientos])
+
+  // ---- C) Vista global flota: gasto por años ----
+  const datosGastoPorAños = useMemo(() => {
+    const años: Record<number, number> = {}
+    mantenimientos.forEach(m => {
+      if (m.costo != null && m.fechaVencimiento) {
+        const año = new Date(m.fechaVencimiento).getFullYear()
+        años[año] = (años[año] ?? 0) + m.costo
+      }
+    })
+    const minAño = Math.min(...Object.keys(años).map(Number), AÑO_ANTERIOR)
+    const datos: Array<{ año: string; coste: number }> = []
+    for (let año = minAño; año <= AÑO_ACTUAL; año++) {
+      datos.push({ año: año.toString(), coste: años[año] ?? 0 })
+    }
+    return datos.sort((a, b) => parseInt(a.año, 10) - parseInt(b.año, 10))
+  }, [mantenimientos])
+
+  const tooltipStyle = {
+    backgroundColor: 'var(--tw-bg-opacity, 1)',
+    border: '1px solid rgb(55 65 81)',
+    borderRadius: '8px',
+    color: 'inherit',
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Análisis de Costes</h1>
-          <p className="text-gray-600 dark:text-dark-400">
-            Visualiza los costes acumulados y métricas de mantenimiento
+      <div>
+        <h1 className="text-3xl font-bold text-dark-900 dark:text-white mb-2">Gráficas y Estadísticas</h1>
+        <p className="text-gray-600 dark:text-dark-400">
+          Resumen de la flota, análisis por vehículo y recomendaciones orientativas.
+        </p>
+      </div>
+
+      {/* A) Resumen flota */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-600 dark:text-dark-400 text-sm">GASTO TOTAL FLOTA</p>
+            <DollarSign className="w-8 h-8 text-primary-500 dark:text-primary-400" />
+          </div>
+          <p className="text-2xl font-bold text-dark-900 dark:text-white">{formatCurrency(resumenFlota.gastoTotalFlota)}</p>
+          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">Acumulado histórico</p>
+        </div>
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-600 dark:text-dark-400 text-sm">AÑO ACTUAL vs ANTERIOR</p>
+            <TrendingUp className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+          </div>
+          <p className="text-2xl font-bold text-dark-900 dark:text-white">{formatCurrency(resumenFlota.gastoAñoActual)}</p>
+          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">
+            {AÑO_ACTUAL}: {formatCurrency(resumenFlota.gastoAñoActual)} · {AÑO_ANTERIOR}: {formatCurrency(resumenFlota.gastoAñoAnterior)}
+            {resumenFlota.gastoAñoAnterior > 0 && (
+              <span className={resumenFlota.variacionPorcentaje <= 0 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
+                {' '}({resumenFlota.variacionPorcentaje >= 0 ? '+' : ''}{resumenFlota.variacionPorcentaje.toFixed(1)} %)
+              </span>
+            )}
           </p>
+        </div>
+        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-600 dark:text-dark-400 text-sm">Nº DE VEHÍCULOS</p>
+            <Truck className="w-8 h-8 text-gray-500 dark:text-dark-400" />
+          </div>
+          <p className="text-2xl font-bold text-dark-900 dark:text-white">{resumenFlota.numVehiculos}</p>
+          <p className="text-gray-500 dark:text-dark-500 text-sm mt-1">En inventario</p>
         </div>
       </div>
 
-      {/* Selector de Vehículo */}
-      <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-4 shadow-sm dark:shadow-none">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700 dark:text-dark-300 whitespace-nowrap">
-            Filtrar por vehículo:
+      {/* B) Análisis por vehículo */}
+      <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
+        <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-4">Análisis por vehículo</h2>
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <label className="text-sm font-medium text-gray-700 dark:text-dark-300 whitespace-nowrap sm:pt-2">
+            Vehículo:
           </label>
           <div className="flex-1 max-w-md">
             <CustomSelect
               options={[
-                { value: '', label: 'Todos los vehículos' },
-                ...vehiculos.map((v) => ({
-                  value: v.id.toString(),
-                  label: `${v.modelo} - ${v.matricula}`,
-                })),
+                { value: '', label: 'Seleccionar un vehículo...' },
+                ...vehiculos.map(v => ({ value: v.id.toString(), label: `${v.modelo} - ${v.matricula}` })),
               ]}
               value={vehiculoSeleccionado}
-              onChange={(value) => setVehiculoSeleccionado(value)}
+              onChange={setVehiculoSeleccionado}
               placeholder="Seleccionar vehículo..."
             />
           </div>
         </div>
-      </div>
 
-      {/* Métricas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">TOTAL GASTADO</p>
-              <p className="text-3xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricas.totalGastado)}</p>
+        {vehiculoActual ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-gray-50 dark:bg-dark-800 rounded-lg p-4">
+                <p className="text-gray-600 dark:text-dark-400 text-sm">Total gastado</p>
+                <p className="text-xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricasVehiculo.totalGastado)}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-dark-800 rounded-lg p-4">
+                <p className="text-gray-600 dark:text-dark-400 text-sm">Gasto anual medio</p>
+                <p className="text-xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricasVehiculo.gastoAnualMedio)}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-dark-800 rounded-lg p-4">
+                <p className="text-gray-600 dark:text-dark-400 text-sm">Últimos 12 meses</p>
+                <p className="text-xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricasVehiculo.gastoUltimos12Meses)}</p>
+              </div>
             </div>
-            <div className="w-16 h-16 bg-primary-500/20 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-8 h-8 text-primary-500 dark:text-primary-400" />
-            </div>
-          </div>
-          <p className="text-gray-600 dark:text-dark-400 text-sm">
-            {vehiculoActual ? `Desde ${vehiculoActual.año}` : 'Total acumulado'}
-          </p>
-        </div>
 
-        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">GASTO ANUAL MEDIO</p>
-              <p className="text-3xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricas.gastoAnualMedio)}</p>
-            </div>
-            <div className="w-16 h-16 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-8 h-8 text-blue-500 dark:text-blue-400" />
-            </div>
-          </div>
-          <p className="text-gray-600 dark:text-dark-400 text-sm">
-            {metricas.añosConGastos > 0 ? `Promedio de ${metricas.añosConGastos} años` : 'Sin datos suficientes'}
-          </p>
-        </div>
+            {datosCostesAcumulados.length > 0 ? (
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-dark-900 dark:text-white mb-2">Coste acumulado</h3>
+                <ResponsiveContainer width="100%" height={320}>
+                  <AreaChart data={datosCostesAcumulados}>
+                    <defs>
+                      <linearGradient id="colorAcumuladoGraficas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-dark-700" />
+                    <XAxis dataKey="año" className="text-gray-600 dark:text-dark-400" tick={{ fontSize: 12 }} />
+                    <YAxis tickFormatter={v => `€${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} className="text-gray-600 dark:text-dark-400" />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(value: number | undefined) => (value != null ? formatCurrency(value) : '')} />
+                    <Area type="monotone" dataKey="acumulado" stroke="#3b82f6" strokeWidth={2} fill="url(#colorAcumuladoGraficas)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center rounded-lg bg-gray-50 dark:bg-dark-800 mb-6">
+                <p className="text-gray-500 dark:text-dark-500 text-sm">No hay datos de costes para este vehículo.</p>
+              </div>
+            )}
 
-        <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">ÚLTIMOS 12 MESES</p>
-              <p className="text-3xl font-bold text-dark-900 dark:text-white">{formatCurrency(metricas.gastoUltimos12Meses)}</p>
-            </div>
-            <div className="w-16 h-16 bg-green-500/20 rounded-lg flex items-center justify-center">
-              <Calendar className="w-8 h-8 text-green-500 dark:text-green-400" />
-            </div>
-          </div>
-          <p className="text-gray-600 dark:text-dark-400 text-sm">Gasto reciente</p>
-        </div>
-      </div>
-
-      {/* Gráfica de Costes Acumulados */}
-      <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">
-            Costes Acumulados {vehiculoActual ? `- ${vehiculoActual.modelo}` : ''}
-          </h2>
-          <p className="text-gray-600 dark:text-dark-400 text-sm">
-            Evolución del gasto acumulado desde {datosCostesAcumulados[0]?.año || 'el inicio'}
-          </p>
-        </div>
-        {datosCostesAcumulados.length > 0 ? (
-          <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={datosCostesAcumulados}>
-              <defs>
-                <linearGradient id="colorAcumulado" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="año" 
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
-                tickFormatter={(value) => `€${(value / 1000).toFixed(0)}k`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-                formatter={(value: number) => formatCurrency(value)}
-              />
-              <Area
-                type="monotone"
-                dataKey="acumulado"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorAcumulado)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+            {/* Card recomendación */}
+            {recomendacion && (
+              <div className="border border-gray-200 dark:border-dark-700 rounded-lg p-4 bg-gray-50 dark:bg-dark-800/50">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getBadgeClasses(recomendacion.nivel)}`}>
+                    {getBadgeLabel(recomendacion.nivel)}
+                  </span>
+                </div>
+                <p className="text-gray-700 dark:text-dark-300 text-sm">{recomendacion.texto}</p>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="h-96 flex items-center justify-center">
-            <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
-              <p className="text-gray-600 dark:text-dark-400 text-sm">No hay datos de costes para mostrar</p>
-            </div>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <AlertCircle className="w-12 h-12 text-gray-400 dark:text-dark-500 mb-3" />
+            <p className="text-gray-600 dark:text-dark-400 text-sm">Seleccione un vehículo para ver el análisis y la recomendación.</p>
           </div>
         )}
       </div>
 
-      {/* Gráfica de Costes por Año */}
+      {/* C) Vista global flota */}
       <div className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-lg p-6 shadow-sm dark:shadow-none">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">
-            Costes por Año {vehiculoActual ? `- ${vehiculoActual.modelo}` : ''}
-          </h2>
-          <p className="text-gray-600 dark:text-dark-400 text-sm">
-            Desglose del gasto anual
-          </p>
-        </div>
-        {datosCostesAcumulados.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={datosCostesAcumulados}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="año" 
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
-                tickFormatter={(value) => `€${(value / 1000).toFixed(0)}k`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-                formatter={(value: number) => formatCurrency(value)}
-              />
-              <Bar dataKey="coste" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-72 flex items-center justify-center">
-            <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
-              <p className="text-gray-600 dark:text-dark-400 text-sm">No hay datos de costes para mostrar</p>
+        <h2 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">Gasto total por años (flota)</h2>
+        <p className="text-gray-600 dark:text-dark-400 text-sm mb-6">Comparativa anual del gasto en mantenimiento.</p>
+        {datosGastoPorAños.length > 0 ? (
+          <>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={datosGastoPorAños}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-dark-700" />
+                <XAxis dataKey="año" className="text-gray-600 dark:text-dark-400" tick={{ fontSize: 12 }} />
+                <YAxis tickFormatter={v => `€${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} className="text-gray-600 dark:text-dark-400" />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value: number | undefined) => (value != null ? formatCurrency(value) : '')} />
+                <Bar dataKey="coste" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Gasto" />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-dark-400">
+              <span><strong className="text-dark-900 dark:text-white">{AÑO_ACTUAL}:</strong> {formatCurrency(resumenFlota.gastoAñoActual)}</span>
+              <span><strong className="text-dark-900 dark:text-white">{AÑO_ANTERIOR}:</strong> {formatCurrency(resumenFlota.gastoAñoAnterior)}</span>
+              {resumenFlota.gastoAñoAnterior > 0 && (
+                <span>
+                  Variación: {resumenFlota.variacionPorcentaje >= 0 ? '+' : ''}{resumenFlota.variacionPorcentaje.toFixed(1)} %
+                </span>
+              )}
             </div>
+          </>
+        ) : (
+          <div className="h-64 flex items-center justify-center rounded-lg bg-gray-50 dark:bg-dark-800">
+            <p className="text-gray-500 dark:text-dark-500 text-sm">No hay datos de gasto por años.</p>
           </div>
         )}
       </div>
 
-      {/* Estimación */}
-      {estimacion && (
-        <div className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-orange-500/20 rounded-lg p-6 shadow-sm dark:shadow-none">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-6 h-6 text-orange-500 dark:text-orange-400" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-dark-900 dark:text-white mb-2">Estimación de Costes</h3>
-              <p className="text-gray-700 dark:text-dark-300">
-                A este ritmo de gasto anual medio de <span className="text-dark-900 dark:text-white font-semibold">{formatCurrency(metricas.gastoAnualMedio)}</span>,
-                en aproximadamente <span className="text-dark-900 dark:text-white font-semibold">{estimacion.años} años</span> el coste anual 
-                superaría <span className="text-dark-900 dark:text-white font-semibold">{formatCurrency(estimacion.umbral)}</span>.
-              </p>
-              <p className="text-gray-600 dark:text-dark-400 text-sm mt-2">
-                * Esta es una estimación simple basada en el promedio histórico. Los costes reales pueden variar.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Disclaimer */}
+      <div className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-800/50 p-4">
+        <Info className="w-5 h-5 text-gray-500 dark:text-dark-400 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-gray-600 dark:text-dark-400">
+          Las recomendaciones se basan en los datos registrados y criterios orientativos. No sustituyen asesoramiento profesional.
+        </p>
+      </div>
     </div>
   )
 }

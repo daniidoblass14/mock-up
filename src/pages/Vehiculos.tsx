@@ -10,7 +10,6 @@ import Modal from '../components/Modal'
 import CustomSelect from '../components/CustomSelect'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { formatMatricula, validateMatricula, normalizeMatricula } from '../utils/matriculaMask'
-import { formatNumber } from '../utils/currency'
 
 const MODELOS = [
   'Toyota Hilux',
@@ -328,7 +327,6 @@ export default function Vehiculos() {
       formData.kilometrajeActual.trim() !== '' &&
       !isNaN(parseInt(formData.kilometrajeActual)) &&
       parseInt(formData.kilometrajeActual) >= 0 &&
-      formData.estado !== '' &&
       Object.keys(fieldErrors).length === 0 &&
       duplicateError === ''
     )

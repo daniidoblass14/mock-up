@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Car, Wrench, Calendar, Settings, Plus, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, Car, Wrench, Calendar, Settings, TrendingUp } from 'lucide-react'
 
 export default function Sidebar() {
   const navigate = useNavigate()

@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, AlertTriangle, DollarSign, ArrowRight, Plus, Truck } from 'lucide-react'
+import { CheckCircle2, Clock, AlertTriangle, DollarSign, ArrowRight, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'

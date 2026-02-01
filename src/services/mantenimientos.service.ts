@@ -124,6 +124,19 @@ class MantenimientosService {
   getByVehiculoId(vehiculoId: number): Mantenimiento[] {
     return this.mantenimientos.filter(m => m.vehiculoId === vehiculoId)
   }
+
+  /** Reemplaza todo el listado. Revive fechaVencimiento si viene como string (JSON). Actualiza nextId. */
+  replaceAll(mantenimientos: Mantenimiento[]): void {
+    const revived = mantenimientos.map(m => ({
+      ...m,
+      fechaVencimiento: m.fechaVencimiento
+        ? (m.fechaVencimiento instanceof Date ? m.fechaVencimiento : new Date(m.fechaVencimiento as unknown as string))
+        : undefined,
+    }))
+    this.mantenimientos = revived.length > 0 ? revived : []
+    const maxId = this.mantenimientos.length > 0 ? Math.max(...this.mantenimientos.map(m => m.id)) : 0
+    this.nextId = maxId + 1
+  }
 }
 
 export const mantenimientosService = new MantenimientosService()
