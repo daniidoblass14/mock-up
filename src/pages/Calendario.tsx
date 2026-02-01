@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Plus, Search, ChevronLeft, ChevronRight, CheckCircle2, Filter, Eye, Edit, Trash2 } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
+import { Plus, Search, ChevronLeft, ChevronRight, CheckCircle2, Filter } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { vehiculosService } from '../services/vehiculos.service'
@@ -187,12 +187,6 @@ export default function Calendario() {
   }, [tareasFiltradas, inicioSemana, finSemana])
 
   const vehiculos = vehiculosService.getAll()
-
-  const handleDiaClick = (dia: number) => {
-    const fechaSeleccionada = new Date(añoActual, mesActual, dia)
-    const fechaISO = fechaSeleccionada.toISOString().split('T')[0]
-    handleAdd(fechaISO)
-  }
 
   return (
     <div className="flex gap-6 h-full">

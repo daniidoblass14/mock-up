@@ -34,14 +34,6 @@ function parseDateStringYYYYMMDD(str: string): Date | undefined {
   return d
 }
 
-/** Formatea Date a "YYYY-MM-DD" en hora local para input type="date". */
-function toDateStringYYYYMMDD(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
 export default function Mantenimientos() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
