@@ -10,6 +10,7 @@ import Modal from '../components/Modal'
 import CustomSelect from '../components/CustomSelect'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { formatMatricula, validateMatricula, normalizeMatricula } from '../utils/matriculaMask'
+import { calcularEstadoDerivadoVehiculo, getEstadoTextoDerivado } from '../utils/estadoVehiculo'
 
 const MODELOS = [
   'Toyota Hilux',
@@ -38,11 +39,6 @@ const TIPOS = [
   { value: 'Pickup', label: 'Pickup' },
 ]
 
-const ESTADOS = [
-  { value: 'al-dia', label: 'Al día' },
-  { value: 'proximo', label: 'Próximo' },
-  { value: 'vencido', label: 'Vencido' },
-]
 
 // Función helper para calcular próximo mantenimiento desde mantenimientos asociados
 function calcularProximoMantenimiento(vehiculoId: number): string {
@@ -113,7 +109,7 @@ function calcularProximoMantenimiento(vehiculoId: number): string {
 export default function Vehiculos() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { vehiculos, addVehiculo, updateVehiculo, deleteVehiculo } = useApp()
+  const { vehiculos, mantenimientos, addVehiculo, updateVehiculo, deleteVehiculo } = useApp()
   const { showToast } = useToast()
   
   const [filtro, setFiltro] = useState<'todos' | 'al-dia' | 'proximo' | 'vencido'>(
@@ -131,7 +127,6 @@ export default function Vehiculos() {
     matricula: '',
     vin: '',
     kilometrajeActual: '',
-    estado: 'al-dia' as 'al-dia' | 'proximo' | 'vencido',
   })
   const [matriculaError, setMatriculaError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
@@ -153,7 +148,6 @@ export default function Vehiculos() {
       matricula: '',
       vin: '',
       kilometrajeActual: '',
-      estado: 'al-dia',
     })
     setMatriculaError('')
     setFieldErrors({})
@@ -214,28 +208,64 @@ export default function Vehiculos() {
         errors.kilometrajeActual = 'El kilometraje debe ser un número válido'
       }
     }
-    if (!formData.estado) {
-      errors.estado = 'El estado es obligatorio'
-    }
     
     setFieldErrors(errors)
     return Object.keys(errors).length === 0
   }
 
-  // Validar duplicados (modelo + matrícula)
-  const checkDuplicate = (): boolean => {
+  // Validar unicidad de matrícula
+  const checkMatriculaUnica = (): boolean => {
     if (!vehiculoSeleccionado) {
-      // Solo validar duplicados al añadir, no al editar
+      // Solo validar al añadir, no al editar
       const existe = vehiculos.some(v => 
-        v.modelo.toLowerCase() === formData.modelo.toLowerCase() &&
         v.matricula.toLowerCase() === formData.matricula.toLowerCase()
       )
       if (existe) {
-        setDuplicateError('Ya existe un vehículo con esa marca, modelo y matrícula')
+        setDuplicateError('Ya existe un vehículo con esa matrícula')
+        return false
+      }
+    } else {
+      // Al editar, verificar que no haya otro vehículo con la misma matrícula
+      const existe = vehiculos.some(v => 
+        v.id !== vehiculoSeleccionado.id &&
+        v.matricula.toLowerCase() === formData.matricula.toLowerCase()
+      )
+      if (existe) {
+        setDuplicateError('Ya existe otro vehículo con esa matrícula')
         return false
       }
     }
     setDuplicateError('')
+    return true
+  }
+
+  // Validar unicidad de VIN (si se proporciona)
+  const checkVINUnico = (): boolean => {
+    if (!formData.vin.trim()) {
+      // VIN es opcional, si está vacío no validar
+      return true
+    }
+    
+    if (!vehiculoSeleccionado) {
+      // Solo validar al añadir
+      const existe = vehiculos.some(v => 
+        v.vin && v.vin.toLowerCase() === formData.vin.toLowerCase()
+      )
+      if (existe) {
+        setDuplicateError('Ya existe un vehículo con ese VIN')
+        return false
+      }
+    } else {
+      // Al editar, verificar que no haya otro vehículo con el mismo VIN
+      const existe = vehiculos.some(v => 
+        v.id !== vehiculoSeleccionado.id &&
+        v.vin && v.vin.toLowerCase() === formData.vin.toLowerCase()
+      )
+      if (existe) {
+        setDuplicateError('Ya existe otro vehículo con ese VIN')
+        return false
+      }
+    }
     return true
   }
 
@@ -251,19 +281,19 @@ export default function Vehiculos() {
       setFieldErrors(newErrors)
     }
     
-    // Validar duplicados cuando cambian modelo o matrícula
-    if ((field === 'modelo' || field === 'matricula') && !vehiculoSeleccionado) {
-      const newFormData = { ...formData, [field]: value }
-      if (newFormData.modelo.trim() && newFormData.matricula.trim()) {
-        const existe = vehiculos.some(v => 
-          v.modelo.toLowerCase() === newFormData.modelo.toLowerCase() &&
-          v.matricula.toLowerCase() === newFormData.matricula.toLowerCase()
-        )
-        if (existe) {
-          setDuplicateError('Ya existe un vehículo con esa marca, modelo y matrícula')
-        } else {
-          setDuplicateError('')
-        }
+    // Validar unicidad cuando cambia matrícula
+    if (field === 'matricula') {
+      const newFormData = { ...formData, matricula: value }
+      if (newFormData.matricula.trim() && validateMatricula(newFormData.matricula)) {
+        checkMatriculaUnica()
+      }
+    }
+    
+    // Validar unicidad cuando cambia VIN
+    if (field === 'vin') {
+      const newFormData = { ...formData, vin: value }
+      if (newFormData.vin.trim()) {
+        checkVINUnico()
       }
     }
   }
@@ -277,15 +307,34 @@ export default function Vehiculos() {
       return
     }
     
-    // Validar duplicados solo al añadir
-    if (!vehiculoSeleccionado && !checkDuplicate()) {
-      showToast('Ya existe un vehículo con esa marca, modelo y matrícula', 'error')
+    // Validar unicidad de matrícula
+    if (!checkMatriculaUnica()) {
+      showToast('Ya existe un vehículo con esa matrícula', 'error')
       return
     }
     
-    // Asegurar que el estado tenga un valor por defecto
-    const estadoFinal = formData.estado || 'al-dia'
-    const estadoTexto = estadoFinal === 'al-dia' ? 'Al día' : estadoFinal === 'proximo' ? 'Próximo' : 'Vencido'
+    // Validar unicidad de VIN
+    if (!checkVINUnico()) {
+      showToast('Ya existe un vehículo con ese VIN', 'error')
+      return
+    }
+    
+    // Crear vehículo temporal para calcular estado derivado
+    const vehiculoTemporal: Vehiculo = {
+      id: vehiculoSeleccionado?.id || 0,
+      modelo: formData.modelo,
+      tipo: formData.tipo,
+      año: parseInt(formData.año),
+      matricula: formData.matricula,
+      vin: formData.vin || undefined,
+      kilometrajeActual: parseInt(formData.kilometrajeActual),
+      estado: 'al-dia', // Temporal, se calculará después
+      estadoTexto: 'Al día',
+    }
+    
+    // Calcular estado derivado basado en mantenimientos
+    const estadoDerivado = calcularEstadoDerivadoVehiculo(vehiculoTemporal, mantenimientos)
+    const estadoTexto = getEstadoTextoDerivado(estadoDerivado)
     
     const vehiculoData: Omit<Vehiculo, 'id'> = {
       modelo: formData.modelo,
@@ -294,7 +343,7 @@ export default function Vehiculos() {
       matricula: formData.matricula,
       vin: formData.vin || undefined,
       kilometrajeActual: parseInt(formData.kilometrajeActual),
-      estado: estadoFinal,
+      estado: estadoDerivado,
       estadoTexto,
     }
     
@@ -327,6 +376,7 @@ export default function Vehiculos() {
       formData.kilometrajeActual.trim() !== '' &&
       !isNaN(parseInt(formData.kilometrajeActual)) &&
       parseInt(formData.kilometrajeActual) >= 0 &&
+      formData.tipo.trim() !== '' &&
       Object.keys(fieldErrors).length === 0 &&
       duplicateError === ''
     )
@@ -543,22 +593,6 @@ export default function Vehiculos() {
             </p>
           )}
         </div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
-          Estado <span className="text-red-400">*</span>
-        </label>
-        <CustomSelect
-          options={ESTADOS}
-          value={formData.estado}
-          onChange={(value) => handleFieldChange('estado', value)}
-          placeholder="Seleccionar estado..."
-        />
-        {fieldErrors.estado && (
-          <p className="mt-1 text-sm text-red-400" role="alert">
-            {fieldErrors.estado}
-          </p>
-        )}
       </div>
       <div className="flex justify-end gap-3 pt-4">
         <button

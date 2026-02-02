@@ -9,8 +9,7 @@ import DetalleVehiculo from './pages/DetalleVehiculo'
 import Mantenimientos from './pages/Mantenimientos'
 import DetalleMantenimiento from './pages/DetalleMantenimiento'
 import Calendario from './pages/Calendario'
-import Graficas from './pages/Graficas'
-import Perfil from './pages/Perfil'
+import Costes from './pages/Costes'
 import Layout from './components/Layout'
 
 function App() {
@@ -29,8 +28,7 @@ function App() {
                 <Route path="mantenimientos" element={<Mantenimientos />} />
                 <Route path="mantenimientos/:id" element={<DetalleMantenimiento />} />
                 <Route path="calendario" element={<Calendario />} />
-                <Route path="graficas" element={<Graficas />} />
-                <Route path="perfil" element={<Perfil />} />
+                <Route path="costes" element={<Costes />} />
               </Route>
             </Routes>
           </BrowserRouter>

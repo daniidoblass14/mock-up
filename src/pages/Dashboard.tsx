@@ -40,53 +40,107 @@ export default function Dashboard() {
     day: 'numeric'
   })
 
-  // Calcular métricas reales
-  const operativos = vehiculos.filter(v => v.estado === 'al-dia').length
-  const proximos = mantenimientos.filter(m => m.estado === 'proximo').length
+  // Calcular métricas reales según V1
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const añoActual = hoy.getFullYear()
+  
+  // Mantenimientos vencidos
   const vencidos = mantenimientos.filter(m => m.estado === 'vencido').length
   
-  const hoy = new Date()
-  const costoMes = mantenimientos
-    .filter(m => {
-      if (!m.fechaVencimiento) return false
+  // Próximos: dentro de 30 días o 1000 km
+  const proximos = mantenimientos.filter(m => {
+    if (m.estado !== 'proximo') return false
+    if (m.fechaVencimiento) {
       const fecha = new Date(m.fechaVencimiento)
-      return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear()
+      fecha.setHours(0, 0, 0, 0)
+      const diffTime = fecha.getTime() - hoy.getTime()
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      return diffDays >= 0 && diffDays <= 30
+    }
+    if (m.odometro !== undefined) {
+      const vehiculo = vehiculosService.getById(m.vehiculoId)
+      if (vehiculo?.kilometrajeActual !== undefined) {
+        const diff = m.odometro - vehiculo.kilometrajeActual
+        return diff >= 0 && diff <= 1000
+      }
+    }
+    return false
+  }).length
+  
+  // Coste del año (mantenimiento)
+  const costoAnual = mantenimientos
+    .filter(m => {
+      if (!m.fechaVencimiento || !m.costo) return false
+      const fecha = new Date(m.fechaVencimiento)
+      return fecha.getFullYear() === añoActual
     })
     .reduce((sum, m) => sum + (m.costo || 0), 0)
 
-  // Generar alertas desde mantenimientos reales
-  const alerts = mantenimientos
-    .filter(m => m.estado === 'vencido' || m.estado === 'proximo')
-    .slice(0, 4)
+  // Generar urgencias: mantenimientos vencidos y próximos (30 días / 1000 km)
+  const urgencias = mantenimientos
+    .filter(m => {
+      if (m.estado === 'vencido') return true
+      if (m.estado === 'proximo') {
+        if (m.fechaVencimiento) {
+          const fecha = new Date(m.fechaVencimiento)
+          fecha.setHours(0, 0, 0, 0)
+          const diffTime = fecha.getTime() - hoy.getTime()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          return diffDays >= 0 && diffDays <= 30
+        }
+        if (m.odometro !== undefined) {
+          const vehiculo = vehiculosService.getById(m.vehiculoId)
+          if (vehiculo?.kilometrajeActual !== undefined) {
+            const diff = m.odometro - vehiculo.kilometrajeActual
+            return diff >= 0 && diff <= 1000
+          }
+        }
+      }
+      return false
+    })
+    .slice(0, 10)
     .map(m => {
       const vehiculo = vehiculosService.getById(m.vehiculoId)
       if (!vehiculo) return null
 
-      const diffTime = m.fechaVencimiento ? new Date(m.fechaVencimiento).getTime() - new Date().getTime() : 0
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      
-      let tag = ''
-      let tagColor = ''
+      let motivo = ''
       if (m.estado === 'vencido') {
-        tag = 'Vencido'
-        tagColor = 'bg-red-500/20 text-red-400'
-      } else if (diffDays <= 7) {
-        tag = diffDays === 0 ? 'Hoy' : `En ${diffDays} días`
-        tagColor = 'bg-orange-500/20 text-orange-400'
+        if (m.fechaVencimiento) {
+          const fecha = new Date(m.fechaVencimiento)
+          fecha.setHours(0, 0, 0, 0)
+          const diffTime = hoy.getTime() - fecha.getTime()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          motivo = `Vencido por fecha (hace ${diffDays} días)`
+        } else if (m.odometro !== undefined && vehiculo.kilometrajeActual !== undefined) {
+          const diff = vehiculo.kilometrajeActual - m.odometro
+          motivo = `Vencido por km (${diff.toLocaleString()} km pasado)`
+        } else {
+          motivo = 'Vencido'
+        }
       } else {
-        tag = `En ${Math.ceil(diffDays / 7)} semanas`
-        tagColor = 'bg-orange-500/20 text-orange-400'
+        if (m.fechaVencimiento) {
+          const fecha = new Date(m.fechaVencimiento)
+          fecha.setHours(0, 0, 0, 0)
+          const diffTime = fecha.getTime() - hoy.getTime()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          motivo = `Próximo por fecha (en ${diffDays} días)`
+        } else if (m.odometro !== undefined && vehiculo.kilometrajeActual !== undefined) {
+          const diff = m.odometro - vehiculo.kilometrajeActual
+          motivo = `Próximo por km (faltan ${diff.toLocaleString()} km)`
+        } else {
+          motivo = 'Próximo'
+        }
       }
 
       return {
         id: m.id,
-        type: m.estado === 'vencido' ? 'vencido' : 'proximo',
+        tipo: m.estado === 'vencido' ? 'vencido' : 'proximo',
         icon: m.estado === 'vencido' ? AlertTriangle : Clock,
-        title: `${m.tipo} - ${vehiculo.modelo}`,
-        tag,
-        tagColor,
-        details: `Matrícula: ${vehiculo.matricula}${m.odometro ? ` • ${m.odometro.toLocaleString('es-ES')} km` : ''}`,
-        mantenimiento: m,
+        mantenimiento: m.tipo,
+        vehiculo: vehiculo.modelo,
+        matricula: vehiculo.matricula,
+        motivo,
       }
     })
     .filter(Boolean)
@@ -100,9 +154,8 @@ export default function Dashboard() {
     navigate('/mantenimientos')
   }
 
-  const handleAlertClick = (alert: any) => {
-    navigate('/mantenimientos')
-    showToast(`Navegando a mantenimiento: ${alert.title}`, 'info')
+  const handleUrgenciaClick = (urgencia: any) => {
+    navigate(`/mantenimientos/${urgencia.id}`)
   }
 
   return (
@@ -167,59 +220,7 @@ export default function Dashboard() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Operativos */}
-        <div 
-          onClick={() => navigate('/vehiculos?filtro=al-dia')}
-          className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-green-500/20 rounded-xl p-6 shadow-md dark:shadow-lg dark:shadow-green-500/5 hover:shadow-lg dark:hover:shadow-green-500/10 transition-all cursor-pointer"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              navigate('/vehiculos?filtro=al-dia')
-            }
-          }}
-          aria-label={`${operativos} vehículos operativos. Click para ver detalles`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 dark:text-dark-300 text-xs font-semibold uppercase tracking-wider mb-2">OPERATIVOS</p>
-              <p className="text-4xl font-bold text-dark-900 dark:text-white mb-1">{operativos}</p>
-            </div>
-            <div className="w-20 h-20 bg-gradient-to-br from-green-500/30 to-green-600/20 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/20">
-              <CheckCircle2 className="w-10 h-10 text-green-500 dark:text-green-400" />
-            </div>
-          </div>
-          <p className="text-gray-600 dark:text-dark-400 text-sm font-medium">Vehículos al día</p>
-        </div>
-
-        {/* Atención */}
-        <div 
-          onClick={() => navigate('/mantenimientos?tab=proximos')}
-          className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 shadow-md dark:shadow-lg dark:shadow-orange-500/5 hover:shadow-lg dark:hover:shadow-orange-500/10 transition-all cursor-pointer"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              navigate('/mantenimientos?tab=proximos')
-            }
-          }}
-          aria-label={`${proximos} mantenimientos próximos. Click para ver detalles`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-600 dark:text-dark-300 text-xs font-semibold uppercase tracking-wider mb-2">ATENCIÓN</p>
-              <p className="text-4xl font-bold text-dark-900 dark:text-white mb-1">{proximos}</p>
-            </div>
-            <div className="w-20 h-20 bg-gradient-to-br from-orange-500/30 to-orange-600/20 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <Clock className="w-10 h-10 text-orange-500 dark:text-orange-400" />
-            </div>
-          </div>
-          <p className="text-gray-600 dark:text-dark-400 text-sm font-medium">Próximos mantenimientos</p>
-        </div>
-
-        {/* Crítico */}
+        {/* Vencidos */}
         <div 
           onClick={() => navigate('/mantenimientos?tab=vencidos')}
           className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-red-500/20 rounded-xl p-6 shadow-md dark:shadow-lg dark:shadow-red-500/5 hover:shadow-lg dark:hover:shadow-red-500/10 transition-all cursor-pointer"
@@ -235,7 +236,7 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-gray-600 dark:text-dark-300 text-xs font-semibold uppercase tracking-wider mb-2">CRÍTICO</p>
+              <p className="text-gray-600 dark:text-dark-300 text-xs font-semibold uppercase tracking-wider mb-2">VENCIDOS</p>
               <p className="text-4xl font-bold text-dark-900 dark:text-white mb-1">{vencidos}</p>
             </div>
             <div className="w-20 h-20 bg-gradient-to-br from-red-500/30 to-red-600/20 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20">
@@ -245,25 +246,51 @@ export default function Dashboard() {
           <p className="text-gray-600 dark:text-dark-400 text-sm font-medium">Mantenimientos vencidos</p>
         </div>
 
-        {/* Finanzas */}
+        {/* Próximos */}
+        <div 
+          onClick={() => navigate('/mantenimientos?tab=proximos')}
+          className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 shadow-md dark:shadow-lg dark:shadow-orange-500/5 hover:shadow-lg dark:hover:shadow-orange-500/10 transition-all cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              navigate('/mantenimientos?tab=proximos')
+            }
+          }}
+          aria-label={`${proximos} mantenimientos próximos. Click para ver detalles`}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-gray-600 dark:text-dark-300 text-xs font-semibold uppercase tracking-wider mb-2">PRÓXIMOS</p>
+              <p className="text-4xl font-bold text-dark-900 dark:text-white mb-1">{proximos}</p>
+            </div>
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-500/30 to-orange-600/20 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+              <Clock className="w-10 h-10 text-orange-500 dark:text-orange-400" />
+            </div>
+          </div>
+          <p className="text-gray-600 dark:text-dark-400 text-sm font-medium">Próximos (30 días / 1000 km)</p>
+        </div>
+
+        {/* Coste del año */}
         <div className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-blue-500/20 rounded-xl p-6 shadow-md dark:shadow-lg dark:shadow-blue-500/5 hover:shadow-blue-500/10 transition-all">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-gray-600 dark:text-dark-300 text-xs font-semibold uppercase tracking-wider mb-2">FINANZAS</p>
-              <p className="text-4xl font-bold text-dark-900 dark:text-white mb-1">{formatCurrency(costoMes)}</p>
+              <p className="text-gray-600 dark:text-dark-300 text-xs font-semibold uppercase tracking-wider mb-2">COSTE DEL AÑO</p>
+              <p className="text-4xl font-bold text-dark-900 dark:text-white mb-1">{formatCurrency(costoAnual)}</p>
             </div>
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500/30 to-blue-600/20 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
               <DollarSign className="w-10 h-10 text-blue-500 dark:text-blue-400" />
             </div>
           </div>
-          <p className="text-gray-600 dark:text-dark-400 text-sm font-medium">Coste este mes</p>
+          <p className="text-gray-600 dark:text-dark-400 text-sm font-medium">Mantenimiento {añoActual}</p>
         </div>
       </div>
 
-      {/* Quick Alerts */}
+      {/* Urgencias */}
       <div className="bg-white dark:bg-gradient-to-br dark:from-dark-900 dark:to-dark-950 border border-gray-200 dark:border-dark-800 rounded-xl p-6 shadow-md dark:shadow-lg">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-dark-900 dark:text-white">Vista rápida de alertas</h2>
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-white">Urgencias</h2>
           <button 
             onClick={handleVerTodo}
             className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 text-sm flex items-center gap-1 font-medium"
@@ -274,55 +301,57 @@ export default function Dashboard() {
           </button>
         </div>
         <div className="space-y-3">
-          {alerts.length === 0 ? (
+          {urgencias.length === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-dark-400">
               <CheckCircle2 className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No hay alertas pendientes</p>
+              <p className="text-sm">No hay urgencias pendientes</p>
               <p className="text-xs text-gray-400 dark:text-dark-500 mt-1">Todos los mantenimientos están al día</p>
             </div>
           ) : (
-            alerts.map((alert: any) => {
-              const Icon = alert.icon
+            urgencias.map((urgencia: any) => {
+              const Icon = urgencia.icon
               return (
                 <div
-                  key={alert.id}
-                  onClick={() => handleAlertClick(alert)}
+                  key={urgencia.id}
+                  onClick={() => handleUrgenciaClick(urgencia)}
                   className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-dark-800/50 border border-gray-200 dark:border-dark-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 hover:border-gray-300 dark:hover:border-dark-600 transition-all cursor-pointer shadow-sm"
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
-                      handleAlertClick(alert)
+                      handleUrgenciaClick(urgencia)
                     }
                   }}
-                  aria-label={`Alerta: ${alert.title}`}
+                  aria-label={`Urgencia: ${urgencia.mantenimiento} - ${urgencia.vehiculo}`}
                 >
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-md ${
-                    alert.type === 'vencido' ? 'bg-gradient-to-br from-red-500/30 to-red-600/20 border border-red-500/30' :
-                    alert.type === 'proximo' ? 'bg-gradient-to-br from-orange-500/30 to-orange-600/20 border border-orange-500/30' :
-                    'bg-gradient-to-br from-blue-500/30 to-blue-600/20 border border-blue-500/30'
+                    urgencia.tipo === 'vencido' ? 'bg-gradient-to-br from-red-500/30 to-red-600/20 border border-red-500/30' :
+                    'bg-gradient-to-br from-orange-500/30 to-orange-600/20 border border-orange-500/30'
                   }`}>
                     <Icon className={`w-7 h-7 ${
-                      alert.type === 'vencido' ? 'text-red-400' :
-                      alert.type === 'proximo' ? 'text-orange-400' :
-                      'text-blue-400'
+                      urgencia.tipo === 'vencido' ? 'text-red-400' : 'text-orange-400'
                     }`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-dark-900 dark:text-white font-semibold">{alert.title}</h3>
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${alert.tagColor} border ${
-                        alert.type === 'vencido' ? 'border-red-500/30' :
-                        alert.type === 'proximo' ? 'border-orange-500/30' :
-                        'border-blue-500/30'
-                      }`}>
-                        {alert.tag}
-                      </span>
+                      <h3 className="text-dark-900 dark:text-white font-semibold">{urgencia.mantenimiento}</h3>
+                      <span className="text-gray-500 dark:text-dark-400 text-sm">•</span>
+                      <span className="text-gray-600 dark:text-dark-400 text-sm">{urgencia.vehiculo}</span>
                     </div>
-                    <p className="text-gray-600 dark:text-dark-300 text-sm">{alert.details}</p>
+                    <p className="text-gray-600 dark:text-dark-400 text-sm mb-1">Matrícula: {urgencia.matricula}</p>
+                    <p className="text-gray-500 dark:text-dark-500 text-xs">{urgencia.motivo}</p>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-gray-500 dark:text-dark-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors" />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleUrgenciaClick(urgencia)
+                    }}
+                    className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  >
+                    Ver
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               )
             })

@@ -1,8 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Search, ChevronLeft, ChevronRight, CheckCircle2, Filter } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { vehiculosService } from '../services/vehiculos.service'
+import { mantenimientosService } from '../services/mantenimientos.service'
 import { TareaCalendario } from '../services/calendario.service'
 import { TIPOS_MANTENIMIENTO } from '../constants/tiposMantenimiento'
 import { formatNumber } from '../utils/currency'
@@ -11,8 +13,9 @@ import CustomSelect from '../components/CustomSelect'
 import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function Calendario() {
-  const { tareasCalendario, updateTareaCalendario, deleteTareaCalendario } = useApp()
+  const { tareasCalendario, mantenimientos, updateTareaCalendario, deleteTareaCalendario } = useApp()
   const { showToast } = useToast()
+  const navigate = useNavigate()
   
   const [fechaActual, setFechaActual] = useState(new Date())
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -308,24 +311,44 @@ export default function Calendario() {
                     {dia}
                   </div>
                   <div className="space-y-1">
-                    {tareasDia.slice(0, 2).map((tarea) => (
-                      <div
-                        key={tarea.id}
-                        onClick={() => handleView(tarea)}
-                        className={`text-xs p-1 rounded border-l-2 ${getTipoColor(tarea.tipo)} bg-white dark:bg-dark-900 text-dark-900 dark:text-white truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors border border-gray-100 dark:border-transparent`}
-                        title={`${tarea.vehiculo} · ${tarea.tipo}`}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleView(tarea)
-                          }
-                        }}
-                      >
-                        {tarea.vehiculo} · {tarea.tipo}
-                      </div>
-                    ))}
+                    {tareasDia.slice(0, 2).map((tarea) => {
+                      // Buscar el mantenimiento relacionado para navegar a su detalle
+                      const mantenimientoRelacionado = mantenimientosService.getAll().find(m => 
+                        m.vehiculoId === tarea.vehiculoId && 
+                        m.tipo === tarea.tipo &&
+                        m.fechaVencimiento &&
+                        new Date(m.fechaVencimiento).getTime() === new Date(tarea.fecha).getTime()
+                      )
+                      
+                      return (
+                        <div
+                          key={tarea.id}
+                          onClick={() => {
+                            if (mantenimientoRelacionado) {
+                              navigate(`/mantenimientos/${mantenimientoRelacionado.id}`)
+                            } else {
+                              handleView(tarea)
+                            }
+                          }}
+                          className={`text-xs p-1 rounded border-l-2 ${getTipoColor(tarea.tipo)} bg-white dark:bg-dark-900 text-dark-900 dark:text-white truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors border border-gray-100 dark:border-transparent`}
+                          title={`${tarea.vehiculo} · ${tarea.tipo}`}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              if (mantenimientoRelacionado) {
+                                navigate(`/mantenimientos/${mantenimientoRelacionado.id}`)
+                              } else {
+                                handleView(tarea)
+                              }
+                            }
+                          }}
+                        >
+                          {tarea.vehiculo} · {tarea.tipo}
+                        </div>
+                      )
+                    })}
                     {tareasDia.length > 2 && (
                       <div className="text-xs text-gray-500 dark:text-dark-400">
                         +{tareasDia.length - 2} más
@@ -382,14 +405,37 @@ export default function Calendario() {
               return (
                 <div
                   key={tarea.id}
-                  onClick={() => handleView(tarea)}
+                  onClick={() => {
+                    // Buscar el mantenimiento relacionado para navegar a su detalle
+                    const mantenimientoRelacionado = mantenimientosService.getAll().find(m => 
+                      m.vehiculoId === tarea.vehiculoId && 
+                      m.tipo === tarea.tipo &&
+                      m.fechaVencimiento &&
+                      new Date(m.fechaVencimiento).getTime() === new Date(tarea.fecha).getTime()
+                    )
+                    if (mantenimientoRelacionado) {
+                      navigate(`/mantenimientos/${mantenimientoRelacionado.id}`)
+                    } else {
+                      handleView(tarea)
+                    }
+                  }}
                   className={`p-4 rounded-lg border-l-4 ${getTipoColor(tarea.tipo)} bg-gray-50 dark:bg-dark-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors border border-gray-100 dark:border-transparent`}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
-                      handleView(tarea)
+                      const mantenimientoRelacionado = mantenimientosService.getAll().find(m => 
+                        m.vehiculoId === tarea.vehiculoId && 
+                        m.tipo === tarea.tipo &&
+                        m.fechaVencimiento &&
+                        new Date(m.fechaVencimiento).getTime() === new Date(tarea.fecha).getTime()
+                      )
+                      if (mantenimientoRelacionado) {
+                        navigate(`/mantenimientos/${mantenimientoRelacionado.id}`)
+                      } else {
+                        handleView(tarea)
+                      }
                     }
                   }}
                 >

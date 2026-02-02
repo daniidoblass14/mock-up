@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext'
 import { mantenimientosService } from '../services/mantenimientos.service'
 import { formatNumber, formatCurrency } from '../utils/currency'
 import { formatMatricula, validateMatricula, normalizeMatricula } from '../utils/matriculaMask'
+import { calcularEstadoDerivadoVehiculo, getEstadoTextoDerivado } from '../utils/estadoVehiculo'
 import CustomSelect from '../components/CustomSelect'
 
 const MODELOS = [
@@ -24,17 +25,11 @@ const TIPOS = [
   { value: 'Pickup', label: 'Pickup' },
 ]
 
-const ESTADOS = [
-  { value: 'al-dia', label: 'Al día' },
-  { value: 'proximo', label: 'Próximo' },
-  { value: 'vencido', label: 'Vencido' },
-]
-
 export default function DetalleVehiculo() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { vehiculos, updateVehiculo } = useApp()
+  const { vehiculos, mantenimientos, updateVehiculo } = useApp()
   const { showToast } = useToast()
 
   const mode = (searchParams.get('mode') ?? 'view') === 'edit' ? 'edit' : 'view'
@@ -53,7 +48,6 @@ export default function DetalleVehiculo() {
     matricula: '',
     vin: '',
     kilometrajeActual: '',
-    estado: 'al-dia' as 'al-dia' | 'proximo' | 'vencido',
   })
 
   useEffect(() => {
@@ -65,7 +59,6 @@ export default function DetalleVehiculo() {
         matricula: vehiculo.matricula,
         vin: vehiculo.vin ?? '',
         kilometrajeActual: vehiculo.kilometrajeActual?.toString() ?? '',
-        estado: vehiculo.estado,
       })
     }
   }, [vehiculo, isEditMode])
@@ -86,7 +79,7 @@ export default function DetalleVehiculo() {
     )
   }
 
-  const mantenimientos = mantenimientosService.getByVehiculoId(vehiculo.id)
+  const mantenimientosVehiculo = mantenimientosService.getByVehiculoId(vehiculo.id)
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
@@ -120,7 +113,23 @@ export default function DetalleVehiculo() {
       showToast('Kilometraje debe ser un número válido', 'error')
       return
     }
-    const estadoTexto = formData.estado === 'al-dia' ? 'Al día' : formData.estado === 'proximo' ? 'Próximo' : 'Vencido'
+    // Crear vehículo temporal para calcular estado derivado
+    const vehiculoTemporal: Vehiculo = {
+      id: vehiculo.id,
+      modelo: formData.modelo.trim(),
+      tipo: formData.tipo.trim(),
+      año: parseInt(formData.año, 10),
+      matricula: formData.matricula.trim(),
+      vin: formData.vin.trim() || undefined,
+      kilometrajeActual: km,
+      estado: 'al-dia', // Temporal, se calculará
+      estadoTexto: 'Al día',
+    }
+    
+    // Calcular estado derivado
+    const estadoDerivado = calcularEstadoDerivadoVehiculo(vehiculoTemporal, mantenimientos)
+    const estadoTexto = getEstadoTextoDerivado(estadoDerivado)
+    
     const updated = updateVehiculo(vehiculo.id, {
       modelo: formData.modelo.trim(),
       tipo: formData.tipo.trim(),
@@ -128,7 +137,7 @@ export default function DetalleVehiculo() {
       matricula: formData.matricula.trim(),
       vin: formData.vin.trim() || undefined,
       kilometrajeActual: km,
-      estado: formData.estado,
+      estado: estadoDerivado,
       estadoTexto,
     })
     if (updated) {
@@ -244,10 +253,6 @@ export default function DetalleVehiculo() {
                   className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">Estado</label>
-                <CustomSelect options={ESTADOS} value={formData.estado} onChange={v => setFormData(f => ({ ...f, estado: v as any }))} placeholder="Seleccionar..." />
-              </div>
             </div>
           </div>
         </form>
@@ -317,7 +322,7 @@ export default function DetalleVehiculo() {
             <div className="flex items-center gap-3">
               <Wrench className="w-5 h-5 text-primary-500 dark:text-primary-400" />
               <h2 className="text-xl font-semibold text-dark-900 dark:text-white">Historial de Mantenimientos</h2>
-              <span className="px-2 py-1 bg-gray-100 dark:bg-dark-800 rounded text-sm text-gray-600 dark:text-dark-400">{mantenimientos.length}</span>
+              <span className="px-2 py-1 bg-gray-100 dark:bg-dark-800 rounded text-sm text-gray-600 dark:text-dark-400">{mantenimientosVehiculo.length}</span>
             </div>
             <button onClick={() => navigate('/mantenimientos')} className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-2 text-sm">
               <Calendar className="w-4 h-4" />
@@ -325,7 +330,7 @@ export default function DetalleVehiculo() {
             </button>
           </div>
         </div>
-        {mantenimientos.length === 0 ? (
+        {mantenimientosVehiculo.length === 0 ? (
           <div className="p-12 text-center">
             <Wrench className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-dark-500 opacity-50" />
             <p className="text-gray-600 dark:text-dark-400 text-sm mb-4">No hay mantenimientos registrados para este vehículo</p>
@@ -343,7 +348,7 @@ export default function DetalleVehiculo() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-dark-800">
-                {mantenimientos.map((m) => (
+                {mantenimientosVehiculo.map((m) => (
                   <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors">
                     <td className="px-6 py-4"><div className="text-dark-900 dark:text-white font-medium">{m.tipo}</div></td>
                     <td className="px-6 py-4 text-gray-700 dark:text-dark-300">

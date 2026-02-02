@@ -145,12 +145,18 @@ export default function Mantenimientos() {
         errors.costo = 'El coste debe ser un número válido'
       }
     }
-    if (!formData.fechaVencimiento.trim()) {
-      errors.fechaVencimiento = 'La fecha objetivo es obligatoria'
+    // Al menos uno de fecha o km debe estar presente
+    if (!formData.fechaVencimiento.trim() && !formData.odometro.trim()) {
+      errors.fechaVencimiento = 'Debe especificar al menos una fecha objetivo o km objetivo'
+      errors.odometro = 'Debe especificar al menos una fecha objetivo o km objetivo'
     }
-    if (!formData.odometro.trim()) {
-      errors.odometro = 'El km objetivo es obligatorio'
-    } else {
+    if (formData.fechaVencimiento.trim()) {
+      const fecha = parseDateStringYYYYMMDD(formData.fechaVencimiento)
+      if (!fecha) {
+        errors.fechaVencimiento = 'Fecha objetivo no válida'
+      }
+    }
+    if (formData.odometro.trim()) {
       const odometro = parseInt(formData.odometro)
       if (isNaN(odometro) || odometro < 0) {
         errors.odometro = 'El km objetivo debe ser un número válido'
@@ -175,16 +181,17 @@ export default function Mantenimientos() {
 
   // Verificar si el formulario es válido para deshabilitar el botón
   const isFormValid = (): boolean => {
+    const tieneFecha = formData.fechaVencimiento.trim() !== ''
+    const tieneKm = formData.odometro.trim() !== '' && !isNaN(parseInt(formData.odometro)) && parseInt(formData.odometro) >= 0
+    const alMenosUno = tieneFecha || tieneKm
+    
     return (
       formData.vehiculoId.trim() !== '' &&
       formData.tipo.trim() !== '' &&
       formData.costo.trim() !== '' &&
       !isNaN(parseFloat(formData.costo)) &&
       parseFloat(formData.costo) >= 0 &&
-      formData.fechaVencimiento.trim() !== '' &&
-      formData.odometro.trim() !== '' &&
-      !isNaN(parseInt(formData.odometro)) &&
-      parseInt(formData.odometro) >= 0 &&
+      alMenosUno &&
       Object.keys(fieldErrors).length === 0
     )
   }
@@ -205,19 +212,63 @@ export default function Mantenimientos() {
       return
     }
     
-    const fechaVencimiento = parseDateStringYYYYMMDD(formData.fechaVencimiento) ?? undefined
-    if (!fechaVencimiento && formData.fechaVencimiento.trim()) {
+    const fechaVencimiento = formData.fechaVencimiento.trim() 
+      ? (parseDateStringYYYYMMDD(formData.fechaVencimiento) ?? undefined)
+      : undefined
+    if (formData.fechaVencimiento.trim() && !fechaVencimiento) {
       setFieldErrors(prev => ({ ...prev, fechaVencimiento: 'Fecha objetivo no válida' }))
       showToast('La fecha objetivo no es válida', 'error')
       return
     }
-    // odometro es obligatorio, así que siempre debe tener un valor
-    const odometro = parseInt(formData.odometro)
+    const odometro = formData.odometro.trim() ? parseInt(formData.odometro) : undefined
+    if (formData.odometro.trim() && (isNaN(odometro!) || odometro! < 0)) {
+      setFieldErrors(prev => ({ ...prev, odometro: 'Km objetivo debe ser un número válido' }))
+      showToast('El km objetivo no es válido', 'error')
+      return
+    }
     
-    // Calcular estado: si es 'auto', según fechaObjetivo (Vencido si < hoy, Próximo si >= hoy)
-    const estadoCalculado = formData.estado === 'auto'
-      ? estadoPorFechaObjetivo(fechaVencimiento)
-      : formData.estado
+    // Calcular estado: si es 'auto', calcular según fecha y/o km
+    let estadoCalculado: 'vencido' | 'proximo' | 'completado' | 'al-dia'
+    if (formData.estado === 'auto') {
+      const hoy = new Date()
+      hoy.setHours(0, 0, 0, 0)
+      
+      // Si hay fecha, evaluar por fecha
+      if (fechaVencimiento) {
+        const fecha = new Date(fechaVencimiento)
+        fecha.setHours(0, 0, 0, 0)
+        const diffTime = fecha.getTime() - hoy.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        
+        if (diffDays < 0) {
+          estadoCalculado = 'vencido'
+        } else if (diffDays <= 30) {
+          estadoCalculado = 'proximo'
+        } else {
+          estadoCalculado = 'al-dia'
+        }
+      } 
+      // Si solo hay km, evaluar por km
+      else if (odometro !== undefined) {
+        const vehiculo = vehiculosService.getById(parseInt(formData.vehiculoId))
+        if (vehiculo?.kilometrajeActual !== undefined) {
+          const diff = odometro - vehiculo.kilometrajeActual
+          if (diff <= 0) {
+            estadoCalculado = 'vencido'
+          } else if (diff <= 1000) {
+            estadoCalculado = 'proximo'
+          } else {
+            estadoCalculado = 'al-dia'
+          }
+        } else {
+          estadoCalculado = 'proximo'
+        }
+      } else {
+        estadoCalculado = 'proximo'
+      }
+    } else {
+      estadoCalculado = formData.estado
+    }
     
     const estadoTexto = estadoCalculado === 'vencido' ? 'Vencido' 
       : estadoCalculado === 'proximo' ? 'Próximo' 
@@ -353,7 +404,7 @@ export default function Mantenimientos() {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="fechaVencimiento" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
-            Fecha objetivo <span className="text-red-400">*</span>
+            Fecha objetivo <span className="text-gray-500 dark:text-dark-500 text-xs">(al menos uno requerido)</span>
           </label>
           <input
             type="date"
@@ -376,7 +427,7 @@ export default function Mantenimientos() {
         </div>
         <div>
           <label htmlFor="odometro" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
-            Km objetivo <span className="text-red-400">*</span>
+            Km objetivo <span className="text-gray-500 dark:text-dark-500 text-xs">(al menos uno requerido)</span>
           </label>
           <input
             type="number"

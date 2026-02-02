@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Wrench, Edit, Calendar, Truck, DollarSign, Gauge, Save } from 'lucide-react'
+import { ArrowLeft, Wrench, Edit, Calendar, Truck, DollarSign, Gauge, Save, CheckCircle2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import { estadoPorFechaObjetivo } from '../services/mantenimientos.service'
@@ -49,8 +49,14 @@ export default function DetalleMantenimiento() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { mantenimientos, updateMantenimiento } = useApp()
+  const { mantenimientos, vehiculos, updateMantenimiento, updateVehiculo } = useApp()
   const { showToast } = useToast()
+  const [isCompletarModalOpen, setIsCompletarModalOpen] = useState(false)
+  const [completarData, setCompletarData] = useState({
+    fechaReal: '',
+    kmReal: '',
+    costoReal: '',
+  })
 
   const mode = (searchParams.get('mode') ?? 'view') === 'edit' ? 'edit' : 'view'
   const isEditMode = mode === 'edit'
@@ -97,7 +103,6 @@ export default function DetalleMantenimiento() {
   }
 
   const vehiculo = vehiculosService.getById(mantenimiento.vehiculoId)
-  const vehiculos = vehiculosService.getAll()
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
@@ -164,6 +169,77 @@ export default function DetalleMantenimiento() {
   }
 
   const title = isEditMode ? 'Editar mantenimiento' : 'Detalle del mantenimiento'
+
+  const handleCompletar = () => {
+    setCompletarData({
+      fechaReal: '',
+      kmReal: '',
+      costoReal: mantenimiento.costo?.toString() || '',
+    })
+    setIsCompletarModalOpen(true)
+  }
+
+  const handleCompletarSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!completarData.fechaReal.trim() || !completarData.kmReal.trim()) {
+      showToast('Fecha real y km real son obligatorios', 'error')
+      return
+    }
+
+    const fechaReal = parseDateStringYYYYMMDD(completarData.fechaReal)
+    if (!fechaReal) {
+      showToast('Fecha real no válida', 'error')
+      return
+    }
+
+    const kmReal = parseInt(completarData.kmReal)
+    if (isNaN(kmReal) || kmReal < 0) {
+      showToast('Km real debe ser un número válido', 'error')
+      return
+    }
+
+    const vehiculo = vehiculosService.getById(mantenimiento.vehiculoId)
+    if (!vehiculo) {
+      showToast('Vehículo no encontrado', 'error')
+      return
+    }
+
+    // Regla: si kmReal > kmActualVehiculo: actualizar kmActual
+    // si kmReal < kmActual: NO actualizar y mostrar aviso
+    if (vehiculo.kilometrajeActual !== undefined) {
+      if (kmReal < vehiculo.kilometrajeActual) {
+        showToast(
+          `El km real (${kmReal.toLocaleString()}) es menor que el km actual del vehículo (${vehiculo.kilometrajeActual.toLocaleString()}). No se actualizará el kilometraje.`,
+          'warning'
+        )
+      } else if (kmReal > vehiculo.kilometrajeActual) {
+        // Actualizar km del vehículo
+        updateVehiculo(vehiculo.id, { kilometrajeActual: kmReal })
+        showToast(`Kilometraje del vehículo actualizado a ${kmReal.toLocaleString()} km`, 'success')
+      }
+    }
+
+    // Actualizar mantenimiento a completado
+    const costoReal = completarData.costoReal.trim() ? parseFloat(completarData.costoReal) : mantenimiento.costo
+    const updated = updateMantenimiento(mantenimiento.id, {
+      estado: 'completado',
+      estadoTexto: 'Completado',
+      // Guardar fechaReal y kmReal en notas o crear campos nuevos (por ahora en notas)
+      notas: mantenimiento.notas 
+        ? `${mantenimiento.notas}\n\nCompletado el ${fechaReal.toLocaleDateString('es-ES')} con ${kmReal.toLocaleString()} km${costoReal ? ` - Coste real: ${formatCurrency(costoReal)}` : ''}`
+        : `Completado el ${fechaReal.toLocaleDateString('es-ES')} con ${kmReal.toLocaleString()} km${costoReal ? ` - Coste real: ${formatCurrency(costoReal)}` : ''}`,
+      costo: costoReal,
+    })
+
+    if (updated) {
+      showToast('Mantenimiento completado correctamente', 'success')
+      setIsCompletarModalOpen(false)
+      goToMode('view')
+    } else {
+      showToast('Error al completar el mantenimiento', 'error')
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -367,8 +443,96 @@ export default function DetalleMantenimiento() {
               </div>
             </div>
           </div>
+          
+          {/* Botón completar mantenimiento (solo si no está completado) */}
+          {mantenimiento.estado !== 'completado' && (
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-dark-800">
+              <button
+                onClick={handleCompletar}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Completar mantenimiento
+              </button>
+            </div>
+          )}
         </>
       )}
+
+      {/* Modal Completar Mantenimiento */}
+      <Modal
+        isOpen={isCompletarModalOpen}
+        onClose={() => setIsCompletarModalOpen(false)}
+        title="Completar mantenimiento"
+        size="md"
+      >
+        <form onSubmit={handleCompletarSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="fechaReal" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
+              Fecha real <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="date"
+              id="fechaReal"
+              required
+              value={completarData.fechaReal}
+              onChange={(e) => setCompletarData({ ...completarData, fechaReal: e.target.value })}
+              className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="kmReal" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
+              Km real <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="number"
+              id="kmReal"
+              min="0"
+              required
+              value={completarData.kmReal}
+              onChange={(e) => setCompletarData({ ...completarData, kmReal: e.target.value })}
+              className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="0"
+            />
+            {vehiculo?.kilometrajeActual !== undefined && (
+              <p className="mt-1 text-xs text-gray-500 dark:text-dark-500">
+                Km actual del vehículo: {formatNumber(vehiculo.kilometrajeActual)} km
+              </p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="costoReal" className="block text-sm font-medium text-gray-700 dark:text-dark-300 mb-2">
+              Coste real (opcional)
+            </label>
+            <input
+              type="number"
+              id="costoReal"
+              min="0"
+              step="0.01"
+              value={completarData.costoReal}
+              onChange={(e) => setCompletarData({ ...completarData, costoReal: e.target.value })}
+              className="w-full bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-3 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="0.00"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={() => setIsCompletarModalOpen(false)}
+              className="px-4 py-2 bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Completar
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

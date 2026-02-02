@@ -405,6 +405,28 @@ class VehiculosService {
     const maxId = this.vehiculos.length > 0 ? Math.max(...this.vehiculos.map(v => v.id)) : 0
     this.nextId = maxId + 1
   }
+
+  /**
+   * Calcula el estado derivado del vehículo basado en sus mantenimientos.
+   * - "Vencido" si tiene ≥ 1 mantenimiento vencido
+   * - "Próximo" si no tiene vencidos pero sí ≥ 1 próximo
+   * - "Al día" si no tiene vencidos ni próximos
+   */
+  calcularEstadoDerivado(vehiculoId: number, mantenimientos: Array<{ estado: string }>): 'al-dia' | 'proximo' | 'vencido' {
+    const mantenimientosVehiculo = mantenimientos.filter(m => {
+      // Necesitamos el vehiculoId del mantenimiento, pero la función recibe solo el estado
+      // Por ahora, asumimos que mantenimientos ya está filtrado por vehiculoId
+      return true
+    })
+
+    const tieneVencidos = mantenimientosVehiculo.some(m => m.estado === 'vencido')
+    if (tieneVencidos) return 'vencido'
+
+    const tieneProximos = mantenimientosVehiculo.some(m => m.estado === 'proximo')
+    if (tieneProximos) return 'proximo'
+
+    return 'al-dia'
+  }
 }
 
 export const vehiculosService = new VehiculosService()

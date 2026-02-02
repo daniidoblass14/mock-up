@@ -3,6 +3,7 @@ import { Vehiculo, vehiculosService } from '../services/vehiculos.service'
 import { Mantenimiento, mantenimientosService } from '../services/mantenimientos.service'
 import { TareaCalendario, calendarioService } from '../services/calendario.service'
 import { loadInitialData, persistData } from '../data/persistence'
+import { calcularEstadoDerivadoVehiculo, getEstadoTextoDerivado } from '../utils/estadoVehiculo'
 
 interface AppContextType {
   vehiculos: Vehiculo[]
@@ -103,6 +104,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
       
+      // Recalcular estado derivado del vehículo
+      const vehiculo = vehiculosService.getById(mantenimiento.vehiculoId)
+      if (vehiculo) {
+        const todosMantenimientos = mantenimientosService.getAll()
+        const estadoDerivado = calcularEstadoDerivadoVehiculo(vehiculo, todosMantenimientos)
+        const estadoTexto = getEstadoTextoDerivado(estadoDerivado)
+        vehiculosService.update(vehiculo.id, { estado: estadoDerivado, estadoTexto })
+      }
+      
       refreshAll()
       persistData()
       return nuevo
@@ -152,6 +162,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
           }
         }
+        
+        // Recalcular estado derivado del vehículo
+        const vehiculo = vehiculosService.getById(actualizado.vehiculoId)
+        if (vehiculo) {
+          const todosMantenimientos = mantenimientosService.getAll()
+          const estadoDerivado = calcularEstadoDerivadoVehiculo(vehiculo, todosMantenimientos)
+          const estadoTexto = getEstadoTextoDerivado(estadoDerivado)
+          vehiculosService.update(vehiculo.id, { estado: estadoDerivado, estadoTexto })
+        }
+        
         refreshAll()
         persistData()
       }
@@ -164,8 +184,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteMantenimiento = useCallback((id: number): boolean => {
     try {
+      // Obtener el mantenimiento antes de eliminarlo para recalcular estado del vehículo
+      const mantenimiento = mantenimientosService.getById(id)
       const eliminado = mantenimientosService.delete(id)
       if (eliminado) {
+        // Recalcular estado derivado del vehículo si existía el mantenimiento
+        if (mantenimiento) {
+          const vehiculo = vehiculosService.getById(mantenimiento.vehiculoId)
+          if (vehiculo) {
+            const todosMantenimientos = mantenimientosService.getAll()
+            const estadoDerivado = calcularEstadoDerivadoVehiculo(vehiculo, todosMantenimientos)
+            const estadoTexto = getEstadoTextoDerivado(estadoDerivado)
+            vehiculosService.update(vehiculo.id, { estado: estadoDerivado, estadoTexto })
+          }
+        }
         refreshAll()
         persistData()
       }
